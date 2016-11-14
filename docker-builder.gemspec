@@ -2,6 +2,7 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'docker_builder/version'
+#require File.expand_path('lib/docker_builder/version')
 
 
 Gem::Specification.new do |spec|
@@ -34,4 +35,8 @@ Gem::Specification.new do |spec|
 
   #s.add_dependency 'httparty'
   #s.add_dependency 'json'
+
+
+  #spec.add_dependency 'ostruct'
+  spec.add_dependency 'thor'
 end

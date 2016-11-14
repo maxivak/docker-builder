@@ -49,7 +49,16 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+
+* Build docker image
+
+```
+docker-builder --root-path examples/nginx
+```
+
+* run docker container
+
+
 
 ## Development
 
@@ -74,6 +83,53 @@ The gem is available as open source under the terms of the [MIT License](http://
 
 
 # Examples
+
+
+## Build Docker container with Chef
+
+* edit config file 'nginx/config.rb'
+
+```
+####
+```
+
+* Chef recipes
+* cookbooks/nginx/recipes/build.rb 
+place chef resources to be included in the Docker image
+
+* cookbooks/nginx/recipes/install.rb
+
+* cookbooks/nginx/recipes/install_host.rb
+
+* build
+
+```
+# run from the folder
+
+docker-builder build['nginx']
+```
+
+* shared data:
+/disk3/data/server-api/nginx-front
+
+data for nginx server:
+* /etc/nginx/conf.d
+* /var/www/html
+* /var/log/nginx
+
+
+* Main site - /var/www/html ==> /disk3/data/server-api/nginx-front/var/www/html
+
+ 
+
+* Config
+
+
+
+## Manage multiple servers
+
+
+
 
 
 # For developers

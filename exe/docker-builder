@@ -1,19 +1,24 @@
 #!/usr/bin/env ruby
 
-require "docker_builder"
-
-
-puts "new docker builder"
-
-
 #lib = File.expand_path(File.dirname(__FILE__) + '/../lib')
-#$LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
+lib = File.expand_path(File.dirname(__FILE__) + 'lib')
+$LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
 
-#require 'heroku'
-#require 'heroku/command'
+require File.expand_path("../../lib/docker_builder", __FILE__)
+#require "docker_builder"
 
-args = ARGV.dup
-ARGV.clear
+
+
+puts "Docker builder v. #{DockerBuilder::VERSION}"
+
+# input
+#args = ARGV.dup
+#ARGV.clear
 #command = args.shift.strip rescue 'help'
 
+#puts "args: #{args}"
 #Heroku::Command.run(command, args)
+
+
+
+DockerBuilder::CLI.start
