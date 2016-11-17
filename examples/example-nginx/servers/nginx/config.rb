@@ -28,7 +28,8 @@ add 'install', {
 
 add 'docker', {
     #'command' => "/sbin/my_init",
-    "command"=> "nginx -g 'daemon off;'",
+    #"command"=> "nginx -g 'daemon off;'",
+    "command"=> "",
     'ports' => [
         [8080,80],
     ],

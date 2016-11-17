@@ -1,6 +1,6 @@
 common({
-    'prefix' => "my-",
-    'image_prefix' => 'my-',
+    'prefix' => "example-",
+    'image_prefix' => 'example-',
     'dir_data' => '/disk3/data/my-examples/'
 })
 
