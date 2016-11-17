@@ -73,6 +73,10 @@ class ServerSettings
     "#{attributes['common']['prefix']}#{s}"
   end
 
+  def chef_node_name
+    "#{attributes['common']['prefix']}#{name}"
+  end
+
   def volume_path_local(v)
     res = v.to_s
 
@@ -208,6 +212,13 @@ class ServerSettings
 
   def dir_server_root
     File.expand_path("servers/#{name}", Config.root_path)
+  end
+
+  def filename_chef_node_json
+    File.expand_path("nodes/#{image_name}.json", dir_server_root)
+  end
+  def filename_chef_client_json
+    File.expand_path("clients/#{image_name}.json", dir_server_root)
   end
 
 

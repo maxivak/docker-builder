@@ -9,16 +9,12 @@ require File.expand_path("../../lib/docker_builder", __FILE__)
 
 
 
-puts "Docker builder v. #{DockerBuilder::VERSION}"
+puts "Docker builder v.#{DockerBuilder::VERSION}"
 
 # input
 #args = ARGV.dup
 #ARGV.clear
 #command = args.shift.strip rescue 'help'
-
-#puts "args: #{args}"
-#Heroku::Command.run(command, args)
-
 
 
 DockerBuilder::CLI.start

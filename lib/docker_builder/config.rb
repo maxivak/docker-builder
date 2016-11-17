@@ -36,11 +36,7 @@ module DockerBuilder
 
       # Loads the user's +config.rb+ and all model files.
       def load(opts = {})
-        puts "o=#{opts}"
-
         update(opts)  # from the command line
-        #
-        exit
 
         unless File.exist?(config_file)
           #raise Error, "Could not find configuration file: '#{config_file}'."
@@ -69,6 +65,17 @@ module DockerBuilder
         # servers
         load_servers(opts)
 
+      end
+
+
+      def dir_gem_root
+        return @dir_gem_root unless @dir_gem_root.nil?
+
+        #
+        spec = Gem::Specification.find_by_name("docker-builder")
+        @dir_gem_root = spec.gem_dir
+
+        @dir_gem_root
       end
 
       def options
@@ -100,22 +107,23 @@ module DockerBuilder
       # If :root_path is set in the options, all paths will be updated.
       # Otherwise, only the paths given will be updated.
       def update(opts = {})
+        #puts "update. opts=#{opts}"
 
         # root_path
         root_path = opts[:root_path].to_s.strip
 
-        puts "root from opts = #{root_path}"
+        #puts "root from opts = #{root_path}"
 
         if root_path.empty?
-          puts " set default"
+          #puts " set default"
           root_path = File.path(Dir.getwd)
-          puts "default root = #{root_path}"
+          #puts "default root = #{root_path}"
         end
 
         new_root = root_path.empty? ? false : set_root_path(root_path)
 
         puts "FINAL root= #{@root_path}"
-        exit
+        #exit
 
         DEFAULTS.each do |name, ending|
           set_path_variable(name, options[name], ending, new_root)
@@ -130,8 +138,7 @@ module DockerBuilder
       # Sets the @root_path to the given +path+ and returns it.
       # Raises an error if the given +path+ does not exist.
       def set_root_path(path)
-
-        puts "set path = #{path}"
+        #puts "set path = #{path}"
 
         # allows #reset! to set the default @root_path,
         # then use #update to set all other paths,
@@ -140,7 +147,7 @@ module DockerBuilder
 
         path = File.expand_path(path)
 
-        puts " res root path=#{path}"
+        #puts " res root path=#{path}"
 
         unless File.directory?(path)
           raise Error, <<-EOS
@@ -181,12 +188,12 @@ module DockerBuilder
         instance_variable_set(:"@#{name}", new_path) if new_path
       end
 
-      def reset!
-        @root_path = File.join(File.expand_path(ENV['HOME'] || ''), 'DockerBuilder')
-        update(:root_path => @root_path)
-      end
+      #def reset!
+      #  @root_path = File.join(File.expand_path(ENV['HOME'] || ''), 'DockerBuilder')
+      #  update(:root_path => @root_path)
+      #end
     end
 
-    reset!  # set defaults on load
+    #reset!  # set defaults on load
   end
 end

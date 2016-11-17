@@ -9,7 +9,15 @@ Build Docker image with Chef provisioning:
 * go to folder where servers are located
 
 * run to build one server
+
+```
+# run from folder where servers are located 
 docker-builder build -s nginx
+
+# or run from any folder
+docker-builder build -s nginx --root-path /path/to/example-nginx
+
+```
 
 
 * it generates temp json file with node attributes

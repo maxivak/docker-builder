@@ -1,6 +1,6 @@
 # Docker builder
 
-Build and run Docker containers with Chef, Dockerfile and other tools.
+Tool to build and install Docker containers with Chef, Dockerfile and other tools.
 
 Config files are in Ruby.
 
@@ -142,3 +142,11 @@ data for nginx server:
 
 * run recipe install_host which runs on the host machine (not in container)
 * run recipe install which runs from within the running container 
+
+
+
+# Other tools
+
+* packer - https://github.com/mitchellh/packer
+
+Packer is a tool for creating identical machine images for multiple platforms from a single source configuration.

@@ -49,7 +49,12 @@ class Manager
   def self.build_image_with_chef(settings)
     puts "build image with chef"
 
-    cmd %Q(SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -j #{settings.filename_config_json} -c lib/docker_builder/chef/.chef/knife.rb lib/docker_builder/chef/chef_build_image.rb )
+    # check node
+    cmd %Q(cd #{Config.root_path} && chef exec knife node show #{settings.chef_node_name} -c #{chef_config_knife_path})
+
+
+    #cmd %Q(SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -j #{settings.filename_config_json} -c #{chef_config_knife_path} #{chef_recipe_path('chef_build_image.rb')} )
+    res_recipe = run_chef_recipe(settings, 'chef_build_image.rb')
   end
 
 
@@ -201,6 +206,7 @@ class Manager
 
   def self.destroy_image(server_name, settings={})
     cmd %Q(docker rmi #{settings.image_name} )
+    cmd %Q(docker rm -f chef.converge.#{settings.image_name} )
 
     # delete chef data
     if settings['build']['build_type']=='chef'
@@ -210,15 +216,25 @@ class Manager
 
 
   def self.destroy_image_chef(settings)
-    cmd %Q(SERVER_NAME=#{settings.name} chef exec knife node delete #{settings.image_name}  -y)
+    puts "destroying image with chef..."
+
+
+    # destroy temp container
+    cmd %Q(docker rm -f chef-converge.#{settings.image_name} )
+
+    #
+    cmd %Q(cd #{Config.root_path} && chef exec knife node delete #{settings.chef_node_name}  -y -c #{chef_config_knife_path})
 
     #cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} chef_destroy_image.rb)
+    #cmd %Q(SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -j #{settings.filename_config_json} -c #{chef_config_knife_path} #{chef_recipe_path('chef_destroy_image.rb')} )
 
-    cmd %Q(SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -j #{settings.filename_config_json} -c lib/docker_builder/chef/.chef/knife.rb lib/docker_builder/chef/chef_destroy_image.rb )
+    res_recipe = run_chef_recipe(settings, 'chef_destroy_image.rb')
 
+    cmd %Q(cd #{Config.root_path} && chef exec knife node delete #{settings.chef_node_name}  -y -c #{chef_config_knife_path})
 
-    cmd %Q(SERVER_NAME=#{settings.name} chef exec knife node delete #{settings.image_name}  -y)
-
+    # clean chef client, node
+    cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_node_json} )
+    cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_client_json} )
   end
 
   ###
@@ -299,5 +315,22 @@ class Manager
 
     puts "#{res}"
   end
+
+
+  ### helpers - chef
+
+  def self.run_chef_recipe(settings, recipe_rb)
+    cmd %Q(cd #{Config.root_path} && SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -j #{settings.filename_config_json} -c #{chef_config_knife_path} #{chef_recipe_path(recipe_rb)} )
+  end
+
+
+  def self.chef_config_knife_path
+    "#{Config.dir_gem_root}/lib/docker_builder/chef/.chef/knife.rb"
+  end
+
+  def self.chef_recipe_path(p)
+    "#{Config.dir_gem_root}/lib/docker_builder/chef/#{p}"
+  end
+
 end
 end

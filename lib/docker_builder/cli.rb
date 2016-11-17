@@ -33,7 +33,7 @@ class CLI < Thor
     puts "building..."
 
     opts = options
-    puts "opt from command line: #{options.inspect}"
+    #puts "opt from command line: #{options.inspect}"
 
 
     warnings = false
@@ -42,34 +42,14 @@ class CLI < Thor
 
     servers = nil
     begin
-      # Load the user's +config.rb+ file and all their Servers
       Config.load(options)
 
-      puts "config root: #{Config.root_path}"
-      puts "config options: #{Config.options}"
-      #puts "config options: common #{Config.options[:common]}"
-      #puts "config options: common #{Config.common}"
 
 
-
-      # Identify all servers
-      if options[:server]
-        servers = {options[:server]=>{}}
-      else
-        # get from config
-        servers = Config.options[:servers]
-      end
-
-      puts "servers: #{servers.inspect}"
-
-      servers.each do |name, opts|
+      Config.servers.each do |name, opts|
         server_settings = Manager.load_settings(name, opts)
 
-        #puts "s=#{server_settings.attributes}"
-        #exit
         Settings.save_settings_json(name, server_settings)
-
-        #exit
 
         Manager.destroy_image(name, server_settings)
         Manager.build_image(name, server_settings)
@@ -141,12 +121,13 @@ class CLI < Thor
     errors = false
 
     begin
-      puts "loading config..."
       Config.load(options)
 
-      puts "servers: #{Config.servers.inspect}"
+      puts "root: #{Config.root_path}"
 
-      servers.each do |name, opts|
+      #puts "servers: #{Config.servers.inspect}"
+
+      Config.servers.each do |name, opts|
         server_settings = Manager.load_settings(name, opts)
 
         Settings.save_settings_json(name, server_settings)
