@@ -5,10 +5,10 @@ class CLI < Thor
   # [build]
   #
   #
-  desc 'build', 'Build Docker container(s)'
+  desc 'build', 'Build Docker image'
 
   long_desc <<-EOS.gsub(/^ +/, '')
-  Build.
+  Build Docker image.
   EOS
 
   method_option :server,
@@ -64,6 +64,14 @@ class CLI < Thor
 
       servers.each do |name, opts|
         server_settings = Manager.load_settings(name, opts)
+
+        #puts "s=#{server_settings.attributes}"
+        #exit
+        Settings.save_settings_json(name, server_settings)
+
+        #exit
+
+        Manager.destroy_image(name, server_settings)
         Manager.build_image(name, server_settings)
       end
 
@@ -93,45 +101,76 @@ class CLI < Thor
       exit(3)
     end
 
+    exit(errors ? 2 : 1) if errors || warnings
 
-=begin
-    until servers.empty?
-      model = models.shift
-      model.perform!
+  end
 
-      case model.exit_status
-        when 1
-          warnings = true
-        when 2
-          errors = true
-          unless models.empty?
-            Logger.info Error.new(<<-EOS)
-              Backup will now continue...
-              The following triggers will now be processed:
-              (#{ models.map {|m| m.trigger }.join(', ') })
-            EOS
-          end
-        when 3
-          fatal = true
-          unless models.empty?
-            Logger.error FatalError.new(<<-EOS)
-              Backup will now exit.
-              The following triggers will not be processed:
-              (#{ models.map {|m| m.trigger }.join(', ') })
-            EOS
-          end
+
+  ##
+  # [destroy_image]
+  #
+  #
+  desc 'destroy_image', 'Destroy Docker image'
+
+  long_desc <<-EOS.gsub(/^ +/, '')
+  Destroy Docker image.
+  EOS
+
+  method_option :server,
+                :aliases  => ['-s', '--server'],
+                :required => false,
+                :type     => :string,
+                :desc     => "Server name"
+
+  method_option :root_path,
+                :aliases  => '-r',
+                :type     => :string,
+                :default  => '',
+                :desc     => 'Root path to base all relative path on.'
+
+  method_option :config_file,
+                :aliases  => '-c',
+                :type     => :string,
+                :default  => '',
+                :desc     => 'Path to your config.rb file.'
+
+  def destroy_image
+    puts "destroying image..."
+
+    warnings = false
+    errors = false
+
+    begin
+      puts "loading config..."
+      Config.load(options)
+
+      puts "servers: #{Config.servers.inspect}"
+
+      servers.each do |name, opts|
+        server_settings = Manager.load_settings(name, opts)
+
+        Settings.save_settings_json(name, server_settings)
+
+        Manager.destroy_image(name, server_settings)
       end
 
-      model.notifiers.each(&:perform!)
-      exit(3) if fatal
-      Logger.clear!
-    end
-=end
+      #raise Error, "No servers found " + "'#{ triggers.join(',') }'." if models.empty?
 
+    rescue Exception => err
+      puts "exception: #{err.inspect}"
+      raise err
+      exit(3)
+    end
 
     exit(errors ? 2 : 1) if errors || warnings
 
   end
+
+
+  ### helpers
+
+
+
 
 end
 end

@@ -132,11 +132,6 @@ data for nginx server:
 
 
 
-# For developers
-
-
-
-
 
 # Build container
 

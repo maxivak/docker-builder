@@ -1,4 +1,5 @@
 module DockerBuilder
+
 class ServerSettings
   attr_accessor :attributes
 
@@ -9,6 +10,18 @@ class ServerSettings
   def attributes
     @attributes ||= {}
     @attributes
+  end
+
+
+  def all_attributes
+    res = attributes
+
+    res['base'] = {
+        'image_name'=> image_name,
+
+    }
+
+    res
   end
 
 
@@ -184,21 +197,25 @@ class ServerSettings
   def file_chef_config
     File.join(File.dirname(__FILE__), '..', 'config' ,"config-#{name}.json")
   end
+
+  def filename_config_json
+    File.join(Config.root_path, 'temp', "#{name}.json")
+  end
+
+  def dir_cookbooks
+    File.expand_path("servers/#{name}/cookbooks", Config.root_path)
+  end
+
+  def dir_server_root
+    File.expand_path("servers/#{name}", Config.root_path)
+  end
+
+
 end
 
 
 
 class Settings
-
-  def self.options
-    res = {
-
-    }
-
-    res['root_path'] = ENV['root_path']
-    res
-  end
-
 
   def self.load_settings_for_server(name, opts={})
     settings = ServerSettings.new
@@ -221,18 +238,42 @@ class Settings
     #
     settings.attributes['name'] ||= name
 
-    #puts "settings = #{settings.attributes}"
+    # from common config
+    settings.attributes['common'] = Config.options[:common]
+
+    #puts "config options  = #{Config.options}"
+    #puts "settings000 = #{settings.attributes}"
+    #exit
+
     settings
   end
 
+
+  def self.save_settings_json(name, settings)
+    filename = file_settings_temp_json(name)
+
+    require 'json'
+    File.open(filename,"w+") do |f|
+      f.write(settings.all_attributes.to_json)
+    end
+
+
+    true
+  end
+
+  ### helpers
+
   def self.file_settings_for_server(name)
-    puts "name: #{name}"
     #File.join(File.dirname(__FILE__), '..', 'config', "#{name}.rb")
     File.join(Config.root_path, 'servers', name, 'config.rb')
   end
 
   def self.file_base_settings
     File.join(File.dirname(__FILE__), '..', 'config' ,'common.rb')
+  end
+
+  def self.file_settings_temp_json(name)
+    File.join(Config.root_path, 'temp', "#{name}.json")
   end
 
 

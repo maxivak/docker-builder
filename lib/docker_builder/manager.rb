@@ -24,8 +24,6 @@ class Manager
 
   ###
   def self.build_image(server_name, settings=nil)
-
-
     puts "building image for #{server_name}..."
     #puts "settings: #{settings}"
     #puts "debug: #{settings['attributes']}"
@@ -49,9 +47,9 @@ class Manager
   end
 
   def self.build_image_with_chef(settings)
-    puts "build image with chef 1"
+    puts "build image with chef"
 
-    cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} lib/chef/chef_build_image.rb )
+    cmd %Q(SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -j #{settings.filename_config_json} -c lib/docker_builder/chef/.chef/knife.rb lib/docker_builder/chef/chef_build_image.rb )
   end
 
 
@@ -201,13 +199,7 @@ class Manager
   end
 
 
-  def self.destroy_image(server_name)
-    settings = load_settings(server_name)
-
-    return _destroy_image(settings)
-  end
-
-  def self._destroy_image(settings)
+  def self.destroy_image(server_name, settings={})
     cmd %Q(docker rmi #{settings.image_name} )
 
     # delete chef data
@@ -218,9 +210,14 @@ class Manager
 
 
   def self.destroy_image_chef(settings)
-    cmd %Q(SERVER_NAME=#{settings.name} knife node delete #{settings.name}  -y)
-    cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} chef_destroy_image.rb)
-    cmd %Q(SERVER_NAME=#{settings.name} knife node delete #{settings.name}  -y)
+    cmd %Q(SERVER_NAME=#{settings.name} chef exec knife node delete #{settings.image_name}  -y)
+
+    #cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} chef_destroy_image.rb)
+
+    cmd %Q(SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -j #{settings.filename_config_json} -c lib/docker_builder/chef/.chef/knife.rb lib/docker_builder/chef/chef_destroy_image.rb )
+
+
+    cmd %Q(SERVER_NAME=#{settings.name} chef exec knife node delete #{settings.image_name}  -y)
 
   end
 
@@ -294,7 +291,11 @@ class Manager
 
   def self.cmd(s)
     puts "running: #{s}"
-    res = `#{s}`
+
+    res = nil
+    Bundler.with_clean_env do
+      res = `#{s}`
+    end
 
     puts "#{res}"
   end
