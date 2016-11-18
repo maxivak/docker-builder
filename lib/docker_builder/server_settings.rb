@@ -18,8 +18,14 @@ class ServerSettings
 
     res['base'] = {
         'image_name'=> image_name,
+        'container_name'=> container_name,
 
     }
+
+    # docker
+    res['docker']['ports'] = docker_ports
+    res['docker']['volumes'] = docker_volumes
+    res['docker']['links'] = docker_links
 
     res
   end
@@ -198,8 +204,10 @@ class ServerSettings
 
 
   ###
-  def file_chef_config
-    File.join(File.dirname(__FILE__), '..', 'config' ,"config-#{name}.json")
+  def filename_chef_config
+    #File.join(File.dirname(__FILE__), '..', 'config' ,"config-#{name}.json")
+
+    File.join(Config.root_path, 'temp', "#{name}.json")
   end
 
   def filename_config_json
@@ -260,18 +268,6 @@ class Settings
   end
 
 
-  def self.save_settings_json(name, settings)
-    filename = file_settings_temp_json(name)
-
-    require 'json'
-    File.open(filename,"w+") do |f|
-      f.write(settings.all_attributes.to_json)
-    end
-
-
-    true
-  end
-
   ### helpers
 
   def self.file_settings_for_server(name)
@@ -283,9 +279,7 @@ class Settings
     File.join(File.dirname(__FILE__), '..', 'config' ,'common.rb')
   end
 
-  def self.file_settings_temp_json(name)
-    File.join(Config.root_path, 'temp', "#{name}.json")
-  end
+
 
 
 end

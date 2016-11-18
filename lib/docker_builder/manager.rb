@@ -10,12 +10,10 @@ class Manager
     settings
   end
 
-  def self.generate_chef_config(settings)
-    filename = settings.file_chef_config
-
+  def self.save_chef_config(settings)
     require 'json'
-    File.open(filename,"w+") do |f|
-      f.write(settings.node.to_json)
+    File.open(settings.filename_chef_config,"w+") do |f|
+      f.write(settings.all_attributes.to_json)
     end
 
     true
@@ -49,6 +47,9 @@ class Manager
   def self.build_image_with_chef(settings)
     puts "build image with chef"
 
+    # config json
+    save_chef_config(settings)
+
     # check node
     cmd %Q(cd #{Config.root_path} && chef exec knife node show #{settings.chef_node_name} -c #{chef_config_knife_path})
 
@@ -60,12 +61,11 @@ class Manager
 
 
 
+  ### run
 
-  def self.run_container(server_name)
-    settings = load_settings(server_name)
-
-    # generate json config for chef
-    generate_chef_config(settings)
+  def self.run_container(server_name, settings={})
+    puts "creating and running container.."
+    #settings = load_settings(server_name)
 
     # provision host before running container
     res_install = _install_container_provision_host(settings)
@@ -101,18 +101,21 @@ class Manager
     script_name = settings['install']['host']['script'] || 'install_host'
 
     # check script exists
-    script_path = "#{settings.name}/cookbooks/#{settings.name}/recipes/#{script_name}.rb"
-    f = File.expand_path('.', script_path)
+    #script_path = "#{settings.name}/cookbooks/#{settings.name}/recipes/#{script_name}.rb"
+    #f = File.expand_path('.', script_path)
 
-    if !File.exists?(f)
-      puts "script not found: #{f}. Skipping"
-      return false
-    end
+    #if !File.exists?(f)
+    #  puts "script not found: #{f}. Skipping"
+    #  return false
+    #end
+
     #puts "pwd= #{Dir.pwd}"
-    #puts "script install = #{script_path}"
+    #puts "root = #{Config.root_path}"
+    #exit
 
     #
-    cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} --override-runlist 'recipe[#{settings.name}::#{script_name}]' )
+    res_chef = run_chef_recipe_server_recipe(settings, script_name)
+    #cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} --override-runlist 'recipe[#{settings.name}::#{script_name}]' )
 
     return true
   end
@@ -190,17 +193,21 @@ class Manager
 =end
 
   def self._run_container_chef(settings)
-    # generate config.json for chef
-
+    # generate json config for chef
+    save_chef_config(settings)
 
     # run chef
     #s_run = %Q(cd #{settings.name} && chef-client -z -j config.json -c ../.chef/knife.rb -N #{settings.name} ../lib/chef_container_run.rb)
     #s_run = %Q(cd #{settings.name} && SERVER_NAME=#{settings.name} chef-client -z -j  config.common.json -N #{settings.name} ../container.rb)
     #s_run = %Q(cd #{settings.name} && SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} ../container.rb)
 
-    s_run = %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} chef_run_container.rb)
+    # good - 2016-nov-19
+    #cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} chef_run_container.rb)
 
-    cmd s_run
+    #
+    res_chef = run_chef_recipe(settings, 'chef_run_container.rb')
+
+    res_chef
   end
 
 
@@ -218,6 +225,8 @@ class Manager
   def self.destroy_image_chef(settings)
     puts "destroying image with chef..."
 
+    # config json
+    save_chef_config(settings)
 
     # destroy temp container
     cmd %Q(docker rm -f chef-converge.#{settings.image_name} )
@@ -230,26 +239,28 @@ class Manager
 
     res_recipe = run_chef_recipe(settings, 'chef_destroy_image.rb')
 
-    cmd %Q(cd #{Config.root_path} && chef exec knife node delete #{settings.chef_node_name}  -y -c #{chef_config_knife_path})
+    chef_remove_data(settings)
+
+    # work - before 2016-nov-19
+    #cmd %Q(cd #{Config.root_path} && chef exec knife node delete #{settings.chef_node_name}  -y -c #{chef_config_knife_path})
 
     # clean chef client, node
-    cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_node_json} )
-    cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_client_json} )
+    #cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_node_json} )
+    #cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_client_json} )
   end
 
   ###
 
 
-  def self.destroy_container(server_name)
-   puts "destroy container #{server_name}"
-
-   settings = load_settings(server_name)
+  def self.destroy_container(server_name, settings)
+   puts "destroying container #{server_name}"
 
    # TODO: stop, remove systemd service
    #res_service = _remove_service_container(settings)
 
    #
    cmd %Q(docker rm -f #{settings.container_name} )
+
 
 
    # if chef
@@ -263,10 +274,12 @@ class Manager
 
 
   def self.destroy_container_chef(settings)
-    cmd %Q(SERVER_NAME=#{settings.name} knife node delete #{settings.name}  -y)
-    # knife client delete --yes NODENAME
+    #
+    res_chef = run_chef_recipe(settings, 'chef_destroy_container.rb')
+    #cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} chef_destroy_container.rb)
 
-    cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} chef_destroy_container.rb)
+    #
+    chef_remove_data(settings)
 
   end
 
@@ -323,6 +336,10 @@ class Manager
     cmd %Q(cd #{Config.root_path} && SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -j #{settings.filename_config_json} -c #{chef_config_knife_path} #{chef_recipe_path(recipe_rb)} )
   end
 
+  def self.run_chef_recipe_server_recipe(settings, server_recipe)
+    cmd %Q(cd #{Config.root_path} && SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -c #{chef_config_knife_path} --override-runlist 'recipe[#{settings.name}::#{server_recipe}]' )
+  end
+
 
   def self.chef_config_knife_path
     "#{Config.dir_gem_root}/lib/docker_builder/chef/.chef/knife.rb"
@@ -332,5 +349,14 @@ class Manager
     "#{Config.dir_gem_root}/lib/docker_builder/chef/#{p}"
   end
 
+
+  def self.chef_remove_data(settings)
+    #
+    cmd %Q(cd #{Config.root_path} && chef exec knife node delete #{settings.chef_node_name}  -y -c #{chef_config_knife_path})
+
+    # clean chef client, node
+    cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_node_json} )
+    cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_client_json} )
+  end
 end
 end

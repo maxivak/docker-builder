@@ -25,7 +25,9 @@ examples/example-nginx/temp/nginx.json
 
 * runs chef-client to build image
 
+```
 SERVER_NAME=nginx chef exec chef-client -z -N nginx -j /mnt/data/projects/mmx/docker-builder/examples/example-nginx/temp/nginx.json lib/docker_builder/chef/chef_build_image.rb 
+```
 
 * chef-client takes json file and recipe and create new Docker image and run recipe 'servers/nginx/cookbooks/recipes/build.rb'
 

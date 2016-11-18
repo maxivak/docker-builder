@@ -49,8 +49,6 @@ class CLI < Thor
       Config.servers.each do |name, opts|
         server_settings = Manager.load_settings(name, opts)
 
-        Settings.save_settings_json(name, server_settings)
-
         Manager.destroy_image(name, server_settings)
         Manager.build_image(name, server_settings)
       end
@@ -130,8 +128,6 @@ class CLI < Thor
       Config.servers.each do |name, opts|
         server_settings = Manager.load_settings(name, opts)
 
-        Settings.save_settings_json(name, server_settings)
-
         Manager.destroy_image(name, server_settings)
       end
 
@@ -146,6 +142,66 @@ class CLI < Thor
     exit(errors ? 2 : 1) if errors || warnings
 
   end
+
+
+  ##
+  # [up]
+  #
+  #
+  desc 'up', 'Run Docker container'
+
+  long_desc <<-EOS.gsub(/^ +/, '')
+  Run Docker container.
+  EOS
+
+  method_option :server,
+                :aliases  => ['-s', '--server'],
+                :required => false,
+                :type     => :string,
+                :desc     => "Server name"
+
+  method_option :root_path,
+                :aliases  => '-r',
+                :type     => :string,
+                :default  => '',
+                :desc     => 'Root path to base all relative path on.'
+
+  method_option :config_file,
+                :aliases  => '-c',
+                :type     => :string,
+                :default  => '',
+                :desc     => 'Path to your config.rb file.'
+
+  def up
+    puts "running..."
+
+    opts = options
+
+    warnings = false
+    errors = false
+
+
+    servers = nil
+    begin
+      Config.load(options)
+
+      Config.servers.each do |name, opts|
+        server_settings = Manager.load_settings(name, opts)
+
+        Manager.destroy_container(name, server_settings)
+        Manager.run_container(name, server_settings)
+      end
+
+    rescue Exception => err
+      puts "exception: #{err.inspect}"
+      raise err
+      exit(3)
+    end
+
+    exit(errors ? 2 : 1) if errors || warnings
+
+  end
+
 
 
   ### helpers
