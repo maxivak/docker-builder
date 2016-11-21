@@ -1,5 +1,9 @@
 # will be run on the host machine
 
-#file '/tmp/nginx-intalled.txt' do
-#  content '33'
-#end
+file '/tmp/example-nginx-intalled.txt' do
+  content '22'
+end
+
+
+
+
