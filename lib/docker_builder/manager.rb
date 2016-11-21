@@ -12,7 +12,9 @@ class Manager
 
   def self.save_chef_config(settings)
     require 'json'
-    File.open(settings.filename_chef_config,"w+") do |f|
+    filename = settings.filename_chef_config
+    FileUtils.mkdir_p(File.dirname(filename))
+    File.open(filename,"w+") do |f|
       f.write(settings.all_attributes.to_json)
     end
 
@@ -253,7 +255,7 @@ class Manager
 
 
   def self.destroy_container(server_name, settings)
-   puts "destroying container #{server_name}"
+   puts "destroying container #{server_name}..."
 
    # TODO: stop, remove systemd service
    #res_service = _remove_service_container(settings)

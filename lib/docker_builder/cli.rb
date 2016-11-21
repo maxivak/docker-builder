@@ -1,5 +1,12 @@
 module DockerBuilder
 class CLI < Thor
+  include Thor::Actions
+
+  def self.source_root
+    #File.dirname(__FILE__)
+    File.expand_path('../../templates', __FILE__)
+  end
+
 
   ##
   # [build]
@@ -43,8 +50,6 @@ class CLI < Thor
     servers = nil
     begin
       Config.load(options)
-
-
 
       Config.servers.each do |name, opts|
         server_settings = Manager.load_settings(name, opts)
@@ -202,6 +207,134 @@ class CLI < Thor
 
   end
 
+
+
+  ##
+  # [destroy]
+  #
+  #
+  desc 'destroy', 'Destroy Docker container'
+
+  long_desc <<-EOS.gsub(/^ +/, '')
+  Destroy Docker container.
+  EOS
+
+  method_option :server,
+                :aliases  => ['-s', '--server'],
+                :required => false,
+                :type     => :string,
+                :desc     => "Server name"
+
+  method_option :root_path,
+                :aliases  => '-r',
+                :type     => :string,
+                :default  => '',
+                :desc     => 'Root path to base all relative path on.'
+
+  method_option :config_file,
+                :aliases  => '-c',
+                :type     => :string,
+                :default  => '',
+                :desc     => 'Path to your config.rb file.'
+
+  def destroy
+    puts "destroying..."
+
+    opts = options
+
+    warnings = false
+    errors = false
+
+
+    servers = nil
+    begin
+      Config.load(options)
+
+      Config.servers.each do |name, opts|
+        server_settings = Manager.load_settings(name, opts)
+
+        Manager.destroy_container(name, server_settings)
+      end
+
+    rescue Exception => err
+      puts "exception: #{err.inspect}"
+      raise err
+      exit(3)
+    end
+
+    exit(errors ? 2 : 1) if errors || warnings
+
+  end
+
+
+  ### generators
+
+  ##
+  # [generate new project]
+  #
+  #
+  desc 'generate', 'Generate new project'
+
+  long_desc <<-EOS.gsub(/^ +/, '')
+  Generate new project
+  EOS
+
+  method_option :name,
+                :aliases  => ['-n', '--name'],
+                :required => false,
+                :type     => :string,
+                :desc     => "Project name"
+
+
+  method_option :type,
+                :aliases  => ['-t', '--type'],
+                :required => false,
+                :type     => :string,
+                :default => 'chef',
+                :desc     => "Provision type"
+
+  def generate
+    puts "creating project..."
+
+    puts "opts: #{options}"
+    name = options[:name]
+    @name = name
+
+    empty_directory(name)
+
+    if options[:type] == 'chef'
+      source_base_dir = "example-chef"
+
+      empty_directory("#{name}/servers")
+      template "#{source_base_dir}/config.rb.erb", "#{name}/config.rb"
+
+
+      # server
+      source_server_dir = "#{source_base_dir}/servers/server1"
+      server_dir = "#{name}/servers/#{name}"
+
+      directory("#{source_base_dir}/servers/server1/.chef", "#{server_dir}/.chef")
+
+
+      # cookbooks
+      empty_directory("#{server_dir}/cookbooks")
+      empty_directory("#{server_dir}/cookbooks/#{name}")
+      empty_directory("#{server_dir}/cookbooks/#{name}/recipes")
+      empty_directory("#{server_dir}/cookbooks/#{name}/templates")
+
+      template "#{source_server_dir}/config.rb.erb", "#{server_dir}/config.rb"
+      template "#{source_server_dir}/cookbooks/server1/metadata.rb.erb", "#{server_dir}/cookbooks/#{name}/metadata.rb"
+
+      directory("#{source_base_dir}/servers/server1/cookbooks/server1/recipes", "#{server_dir}/cookbooks/#{name}/recipes")
+      directory("#{source_base_dir}/servers/server1/cookbooks/server1/templates", "#{server_dir}/cookbooks/#{name}/templates")
+      copy_file("#{source_base_dir}/servers/server1/cookbooks/server1/README.md", "#{server_dir}/cookbooks/#{name}/README.md")
+
+
+    end
+
+
+
+  end
 
 
   ### helpers

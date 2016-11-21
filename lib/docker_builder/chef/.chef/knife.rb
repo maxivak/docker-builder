@@ -21,7 +21,7 @@ node_name     my_server_name
 knife[:chef_node_name] = my_server_name
 
 server_base_dir = ENV['SERVER_PATH']
-server_cookbooks_path = File.expand_path('cookbooks', ENV['SERVER_PATH'])
+server_cookbooks_path = File.expand_path('cookbooks', server_base_dir)
 
 
 #client_key               "#{current_dir}/dummy.pem"
@@ -38,8 +38,8 @@ cookbooks_paths = [
     #File.expand_path('../temp-cookbooks', root),
     #File.join(root, '../cookbooks'),
     #File.join(root, '../', node_name, 'cookbooks'),
-    #'/mnt/data/projects/mmx/chef-repo/cookbooks-common',
-    #'/mnt/data/projects/mmx/chef-repo/cookbooks',
+    '/mnt/data/projects/mmx/chef-repo/cookbooks-common',
+    '/mnt/data/projects/mmx/chef-repo/cookbooks',
 ]
 
 cookbooks_paths.reject!{|f| !Dir.exists?(f)}
@@ -51,17 +51,16 @@ cookbook_path cookbooks_paths
 
 # load another knife file
 file_knife_custom = File.expand_path(".chef/knife.rb", server_base_dir)
-#file_knife_custom = File.expand_path("../../examples/example-nginx/servers/#{my_server_name}/.chef/knife.rb", __FILE__)
+#File.expand_path("../../examples/example-nginx/servers/#{my_server_name}/.chef/knife.rb", __FILE__)
 
-#puts "f=#{file_knife_custom}"
+puts "f=#{file_knife_custom}"
+
 if ::File.exist?(file_knife_custom)
-  #puts "load from file"
+  puts "load from file"
   #exit
-  #Chef::Config.from_file(file_knife_custom)
+  Chef::Config.from_file(file_knife_custom)
 end
 
-# Allow overriding values in this knife.rb
-#Chef::Config.from_file(knife_override) if File.exist?(knife_override)
 
 
 # node name

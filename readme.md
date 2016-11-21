@@ -7,6 +7,54 @@ Config files are in Ruby.
 Manage complexity of running Docker containers for your environment in one place.
 
 
+# Basic usage
+
+## Server with Chef provisioning
+
+* generate directory structure using generator
+```
+docker-builder generate --name=nginx --type=chef
+``` 
+
+it will create a folder `nginx`
+
+* in the folder edit config file `config.rb` with common settings
+
+```
+
+```
+
+* edit custom settings for the server in file `servers/nginx/config.rb`
+ 
+```
+```
+
+* build Docker image
+
+```
+# from the folder with project
+
+docker-builder build
+```
+
+* run container
+
+```
+docker-builder up
+```
+
+* check container is running
+```
+docker ps
+```
+
+* access container from browser
+
+```
+http://localhost:8080
+```
+
+
 
 # Overview
 
@@ -31,7 +79,7 @@ Process of building and running container on the host machine:
 
 
 
-## Installation
+# Installation
 
 Add this line to your application's Gemfile:
 
@@ -49,7 +97,7 @@ Or install it yourself as:
 
 
 
-## Usage
+# Usage
 
 
 * Build docker image
@@ -80,19 +128,11 @@ docker exec -ti container_name /bin/bash
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `bin/setup` to install dependencies. 
+You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/docker-builder. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
-
-## License
-
-The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
 
 
 
