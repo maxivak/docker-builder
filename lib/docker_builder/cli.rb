@@ -51,8 +51,15 @@ class CLI < Thor
     begin
       Config.load(options)
 
+      #puts "config servers: #{Config.inspect}"
+      #puts "config: #{Config.options.inspect}"
+      #exit
+
       Config.servers.each do |name, opts|
-        server_settings = Manager.load_settings(name, opts)
+        server_settings = Settings.load_settings_for_server(name, opts)
+
+        #puts "s: #{server_settings.inspect}"
+        #exit
 
         Manager.destroy_image(name, server_settings)
         Manager.build_image(name, server_settings)
@@ -125,13 +132,13 @@ class CLI < Thor
 
     begin
       Config.load(options)
-
-      puts "root: #{Config.root_path}"
-
-      #puts "servers: #{Config.servers.inspect}"
+      puts "config: #{Config.inspect}"
 
       Config.servers.each do |name, opts|
-        server_settings = Manager.load_settings(name, opts)
+        server_settings = Settings.load_settings_for_server(name, opts)
+
+        puts "s: #{server_settings.inspect}"
+        exit
 
         Manager.destroy_image(name, server_settings)
       end
@@ -191,7 +198,7 @@ class CLI < Thor
       Config.load(options)
 
       Config.servers.each do |name, opts|
-        server_settings = Manager.load_settings(name, opts)
+        server_settings = Settings.load_settings_for_server(name, opts)
 
         Manager.destroy_container(name, server_settings)
         Manager.run_container(name, server_settings)
@@ -251,7 +258,7 @@ class CLI < Thor
       Config.load(options)
 
       Config.servers.each do |name, opts|
-        server_settings = Manager.load_settings(name, opts)
+        server_settings = Settings.load_settings_for_server(name, opts)
 
         Manager.destroy_container(name, server_settings)
       end

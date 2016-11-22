@@ -69,7 +69,20 @@ class ServerSettings
   def image_name
     s = attributes['name']
 
+    if !need_build?
+      bi = attributes['build']['base_image']
+      return "#{bi['name']}:#{bi['tag']}"
+    end
+
     "#{attributes['common']['image_prefix']}#{s}"
+  end
+
+  def need_build?
+    build_type = attributes['build']['build_type']
+    return false if build_type=='' || build_type=='none'
+
+
+    true
   end
 
   def container_name(name=nil)
@@ -238,6 +251,13 @@ class Settings
 
   def self.load_settings_for_server(name, opts={})
     settings = ServerSettings.new
+
+    settings.set 'name', name
+
+    # set from main Config
+    Config.servers[name].each do |k,v|
+      settings.attributes[k]=v
+    end
 
 
     #puts "current=#{File.dirname(__FILE__)}"

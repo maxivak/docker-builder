@@ -1,15 +1,6 @@
 module DockerBuilder
 class Manager
 
-
-  def self.load_settings(server_name, opts={})
-    settings = Settings.load_settings_for_server(server_name, opts)
-
-    settings.set 'name', server_name
-
-    settings
-  end
-
   def self.save_chef_config(settings)
     require 'json'
     filename = settings.filename_chef_config
@@ -30,19 +21,23 @@ class Manager
 
     #settings = load_settings(server_name)
 
-    if settings['build']['build_type']=='dockerfile'
+    t = settings['build']['build_type']
+    if t=='' || t=='none'
+      #
+      puts "no build needed..."
+
+    elsif t.downcase=='dockerfile'
       return build_image_with_dockerfile(settings)
-    elsif settings['build']['build_type']=='chef'
+    elsif t=='chef'
       return build_image_with_chef(settings)
     end
   end
 
   def self.build_image_with_dockerfile(settings)
-    puts "build image with Dockerfile. Image: #{settings.image_name}"
+    puts "build image with Dockerfile"
 
-    name = settings['name']
-
-    cmd %Q(cd #{name} && docker build -t #{settings.image_name} . )
+    #cmd %Q(cd #{name} && docker build -t #{settings.image_name} . )
+    cmd %Q(docker build -t #{settings.image_name} #{settings.dir_server_root} )
 
   end
 
@@ -127,6 +122,9 @@ class Manager
     puts "run container ..."
 
     script_type = (settings['install']['node']['script_type'] rescue nil)
+
+    puts "script type: #{script_type}"
+
 
     if script_type && script_type=='chef_recipe'
       # run container and provision with chef

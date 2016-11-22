@@ -16,7 +16,7 @@ module DockerBuilder
     class << self
       #include Utilities::Helpers
 
-      attr_reader :server, :root_path, :config_file, :tmp_path, :options
+      attr_reader :servers, :root_path, :config_file, :tmp_path, :options
 
 
       # Define on self, since it's  a class method
@@ -92,7 +92,8 @@ module DockerBuilder
       def load_servers(opts)
         # Identify all servers
         if opts[:server]
-          options[:servers] = {opts[:server]=>{}}
+          server_name = opts[:server]
+          options[:servers] = {server_name=>options[:servers][server_name] }
         else
           # get from config
           #options[:servers] = options[:servers]

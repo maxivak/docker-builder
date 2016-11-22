@@ -141,6 +141,14 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 * CHEF_COOKBOOKS - list of paths to chef cookbooks
 
 
+# Build Docker image
+
+Build types:
+* 'none' - no build required
+* 'Dockerfile' - using Dockerfile and docker build command
+* 'chef' - using Chef provisioning
+
+
 # Chef provisioning
 
 * add additional paths for cookbooks
