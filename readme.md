@@ -141,12 +141,31 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 * CHEF_COOKBOOKS - list of paths to chef cookbooks
 
 
-# Examples
+# Chef provisioning
+
+* add additional paths for cookbooks
+
+in folder with servers:
+
+```
+# /path/to/my/servers/.chef/knife.rb
+
+cookbook_path cookbook_path+[
+    '/path/to/my/cookbooks',
+    '/path/to/my//other/cookbooks',
+]
+
+```
 
 
-## Build Docker container with Chef
+# Build Docker container with Chef
 
-* edit config file 'nginx/config.rb'
+Example of building Docker container with Chef.
+
+Assume that our server name is 'nginx'.
+
+
+* edit config file 'myserver/config.rb'
 
 ```
 ####
