@@ -27,10 +27,6 @@ server_cookbooks_path = File.expand_path('cookbooks', server_base_dir)
 #client_key               "#{current_dir}/dummy.pem"
 #validation_client_name   "validator"
 
-#p = File.join(root, '../', node_name, 'cookbooks')
-#puts "p=#{p}"
-#exit
-
 cookbooks_paths = [
     server_cookbooks_path,
 
@@ -38,30 +34,39 @@ cookbooks_paths = [
     #File.expand_path('../temp-cookbooks', root),
     #File.join(root, '../cookbooks'),
     #File.join(root, '../', node_name, 'cookbooks'),
-    '/mnt/data/projects/mmx/chef-repo/cookbooks-common',
-    '/mnt/data/projects/mmx/chef-repo/cookbooks',
+
+    #'/mnt/data/projects/mmx/chef-repo/cookbooks-common',
+    #'/mnt/data/projects/mmx/chef-repo/cookbooks',
+    #'/work/chef-repo/cookbooks-common',
+    #'/work/chef-repo/cookbooks',
+
 ]
 
 cookbooks_paths.reject!{|f| !Dir.exists?(f)}
 
 #puts "cookbooks: #{cookbooks_paths.inspect}"
 
-cookbook_path cookbooks_paths
+
 
 
 # load another knife file
-file_knife_custom = File.expand_path(".chef/knife.rb", server_base_dir)
+knife_custom_files = [
+    File.expand_path(".chef/knife.rb", server_base_dir),
+    File.expand_path("../../.chef/knife.rb", server_base_dir),
+]
 #File.expand_path("../../examples/example-nginx/servers/#{my_server_name}/.chef/knife.rb", __FILE__)
 
-puts "f=#{file_knife_custom}"
-
-if ::File.exist?(file_knife_custom)
-  puts "load from file"
-  #exit
-  Chef::Config.from_file(file_knife_custom)
+knife_custom_files.each do |file_knife_custom|
+  if ::File.exist?(file_knife_custom)
+    #puts "load from file #{file_knife_custom}"
+    Chef::Config.from_file(file_knife_custom)
+  end
 end
 
 
+cookbook_path cookbook_path+cookbooks_paths
+
+puts "FINAL cookbooks: #{cookbook_path}"
 
 # node name
 knife[:force] = true
