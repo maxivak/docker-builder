@@ -31,14 +31,17 @@ servers({
         },
         'docker'=> {
             #"command"=> "",
+
             'ports' => [
-                [2181,2181],
+                [42181,2181],
             ],
             'volumes' => [
             ],
             'links' => [
 
-            ]
+            ],
+
+            'run_extra_options'=>'--hostname zookeeper'
         },
         'attributes' => {
         }

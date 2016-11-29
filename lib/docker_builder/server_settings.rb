@@ -211,6 +211,14 @@ class ServerSettings
 
 
   ###
+
+  def run_extra_options_string
+    s = attributes['docker']['run_extra_options'] || ''
+    s
+  end
+
+
+  ###
   def [](key)
     attributes[key]
   end

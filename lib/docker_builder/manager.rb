@@ -136,7 +136,7 @@ class Manager
       #_run_container_docker(settings)
 
       # docker run
-      cmd %Q(docker run -d --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
+      cmd %Q(docker run -d --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
 
     end
 
