@@ -7,6 +7,146 @@ Config files are in Ruby.
 Manage complexity of running Docker containers for your environment in one place.
 
 
+# Quickstart
+
+* install gem
+
+```
+gem install docker-builder
+```
+
+
+* generate directory structure using generator
+
+```
+docker-builder generate --name=nginx --type=chef
+``` 
+
+it will create a folder `nginx`
+
+* in the folder edit config file `config.rb` with common settings
+
+```
+common({
+    'prefix' => "example-",
+    'image_prefix' => 'example-',
+    'dir_data' => '/disk3/data/my-examples/',
+
+})
+
+servers({
+    'nginx'=>{
+        # some server options here
+    },
+
+
+})
+
+
+base({
+
+})
+
+
+```
+
+* edit custom settings for the server in file `servers/nginx/config.rb`
+ 
+```
+
+add 'build', {
+    "image_name" => "nginx",
+    'build_type' => 'chef',
+    "base_image" => {        "name" => "nginx",        "repository" => "nginx",        "tag" => "1.10"    },
+
+}
+
+add 'install', {
+    "host" => {      'script_type' => 'chef_recipe',       'script' => 'install_host',    },
+    "node" => {       'script_type' => 'chef_recipe',       'script' => 'install',    }
+}
+
+add 'docker', {
+    "command"=> "nginx -g 'daemon off;'",
+    'ports' => [
+        [8080,80],
+    ],
+    'volumes' => [
+        ['html', '/usr/share/nginx/html'],
+        ['log/nginx', '/var/log/nginx/'],
+    ],
+    'links' => [    ]
+}
+
+add 'attributes', {
+  'nginx' =>{
+      "sitename" =>"mysite.local"
+  },
+
+
+}
+
+
+```
+
+* build Docker image
+
+```
+# from the folder with project
+
+docker-builder build
+```
+
+* run container
+
+```
+docker-builder up
+```
+
+* check container is running
+```
+docker ps
+
+# see container named example-nginx
+```
+
+* access container 
+
+```
+docker exec -ti example-nginx /bin/bash
+```
+
+* access container from browser
+
+```
+http://localhost:8080
+```
+
+
+
+# Overview
+
+Process of building and running container on the host machine:
+* Build Docker image
+    * it will create a Docker image on the host machine
+    
+* Run Docker container
+    * provision host machine - run scripts locally on the host machine
+    (recipe install_host.rb)
+    * run container (docker run)
+    * provision container - run script in the container
+    (recipe install.rb)
+
+* Install systemd service to run Docker container (optional)
+
+* Start/Stop container
+
+* Destroy container
+
+* Destroy image
+
+
+
 # Basic usage
 
 ## Server with Chef provisioning
@@ -55,45 +195,13 @@ http://localhost:8080
 ```
 
 
-
-# Overview
-
-Process of building and running container on the host machine:
-* Build Docker image
-    * it will create a Docker image on the host machine
-    
-* Run Docker container
-    * provision host machine - run scripts locally on the host machine
-    (recipe install_host.rb)
-    * run container (docker run)
-    * provision container - run script in the container
-    (recipe install.rb)
-
-* Install systemd service to run Docker container (optional)
-
-* Start/Stop container
-
-* Destroy container
-
-* Destroy image
-
-
-
 # Installation
 
-Add this line to your application's Gemfile:
 
-```ruby
-gem 'docker-builder'
+Install gem:
 ```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install docker-builder
+$ gem install docker-builder
+```
 
 
 
