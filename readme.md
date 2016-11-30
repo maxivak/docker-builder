@@ -136,7 +136,22 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 
 
-# Settings
+# Configuration
+
+* edit config.rb in your root folder
+
+You can put all settings in this config.rb file and/or use config.rb file in each server's folder.
+
+Config files:
+```
+/path/to/project/config.rb
+/path/to/project/servers/server1/config.rb
+/path/to/project/servers/server2/config.rb
+```
+
+
+## config.rb
+
 
 * CHEF_COOKBOOKS - list of paths to chef cookbooks
 
@@ -239,3 +254,24 @@ data for nginx server:
 * packer - https://github.com/mitchellh/packer
 
 Packer is a tool for creating identical machine images for multiple platforms from a single source configuration.
+
+
+
+# Docker options for running container
+
+* additional options for docker run command 
+* hostname
+
+```
+{
+..
+servers({
+    'zookeeper'=>{
+    ...
+        'docker'=> {
+            ...
+            'run_extra_options'=>'--hostname zookeeper'
+        }
+}
+```
+
