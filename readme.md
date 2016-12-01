@@ -6,8 +6,32 @@ Config files are in Ruby.
 
 Manage complexity of running Docker containers for your environment in one place.
 
+# Overview
+
+Process of building and running container on the host machine:
+* Build Docker image
+    * it will create a Docker image on the host machine
+    
+* Run Docker container
+    * provision host machine - run scripts locally on the host machine
+    (recipe install_host.rb)
+    * run container (docker run)
+    * provision container - run script in the container
+    (recipe install.rb)
+
+* Install systemd service to run Docker container (optional)
+
+* Start/Stop container
+
+* Destroy container
+
+* Destroy image
+
+
 
 # Quickstart
+
+We will build and run a simple Docker container with Nginx server.
 
 * install gem
 
@@ -22,7 +46,8 @@ gem install docker-builder
 docker-builder generate --name=nginx --type=chef
 ``` 
 
-it will create a folder `nginx`
+it will create a folder `nginx` with necessary directory structure inside.
+
 
 * in the folder edit config file `config.rb` with common settings
 
@@ -124,26 +149,6 @@ http://localhost:8080
 
 
 
-# Overview
-
-Process of building and running container on the host machine:
-* Build Docker image
-    * it will create a Docker image on the host machine
-    
-* Run Docker container
-    * provision host machine - run scripts locally on the host machine
-    (recipe install_host.rb)
-    * run container (docker run)
-    * provision container - run script in the container
-    (recipe install.rb)
-
-* Install systemd service to run Docker container (optional)
-
-* Start/Stop container
-
-* Destroy container
-
-* Destroy image
 
 
 

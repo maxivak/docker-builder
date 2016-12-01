@@ -13,10 +13,15 @@ docker_options = {
     command: node['docker']['command'] || '',
     ports: node['docker']['ports'].map{|d| "#{d[0]}:#{d[1]}"},
     volumes: node['docker']['volumes'].map{|d| "#{d[0]}:#{d[1]}"},
-    links: node['docker']['links'].map{|d| "#{d[0]}:#{d[1]}"}
+    links: node['docker']['links'].map{|d| "#{d[0]}:#{d[1]}"},
+
 }
 
-#puts "opt = #{docker_options}"
+# more options
+docker_options['hostname'] = node['docker']['hostname'] if node['docker']['hostname']
+
+
+puts "opt = #{docker_options}"
 #puts "volumes = #{node['docker']['volumes']}"
 #exit
 

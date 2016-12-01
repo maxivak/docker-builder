@@ -293,6 +293,20 @@ class Manager
     return true
   end
 
+
+  ### stop container
+
+  def self.stop_container(server_name, settings)
+    puts "stopping container #{server_name}..."
+
+    #
+    cmd %Q(docker stop #{settings.container_name} )
+
+    #
+    return true
+  end
+
+
   ### run task on running container
   def self.exec_task(server_name, recipe_name)
     #raise 'not implemented'
