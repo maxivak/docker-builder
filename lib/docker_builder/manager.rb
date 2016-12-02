@@ -132,7 +132,15 @@ class Manager
 
       # ???
       #_provision_container_chef_recipe(settings)
+    elsif script_type && script_type=='shell'
+      # docker run
+      cmd %Q(docker run -d --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
+
+      # provision with shell script
+      run_shell_script_in_container(settings, "install.sh")
+
     else
+      # no script for provision
       #_run_container_docker(settings)
 
       # docker run
@@ -344,14 +352,28 @@ class Manager
   end
 
 
+  ### helpers - shell
+
+  def self.run_shell_script_in_container(settings, script_name)
+    script_path = settings.make_path_full("scripts/#{script_name}")
+
+    # copy
+    cmd %Q(cd #{Config.root_path} && docker cp #{script_path} #{settings.container_name}:/tmp/#{script_name} )
+
+    # exec
+    cmd %Q(docker exec #{settings.container_name} chmod +x /tmp/#{script_name} )
+    cmd %Q(docker exec #{settings.container_name} /tmp/#{script_name} )
+  end
+
+
   ### helpers - chef
 
   def self.run_chef_recipe(settings, recipe_rb)
-    cmd %Q(cd #{Config.root_path} && SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -j #{settings.filename_config_json} -c #{chef_config_knife_path} #{chef_recipe_path(recipe_rb)} )
+    cmd %Q(cd #{Config.root_path} && SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.container_name} -j #{settings.filename_config_json} -c #{chef_config_knife_path} #{chef_recipe_path(recipe_rb)} )
   end
 
   def self.run_chef_recipe_server_recipe(settings, server_recipe)
-    cmd %Q(cd #{Config.root_path} && SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -c #{chef_config_knife_path} --override-runlist 'recipe[#{settings.name}::#{server_recipe}]' )
+    cmd %Q(cd #{Config.root_path} && SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.container_name} -c #{chef_config_knife_path} --override-runlist 'recipe[#{settings.name}::#{server_recipe}]' )
   end
 
 

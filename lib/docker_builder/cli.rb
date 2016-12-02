@@ -40,7 +40,7 @@ class CLI < Thor
     puts "building..."
 
     opts = options
-    #puts "opt from command line: #{options.inspect}"
+    puts "opt from command line: #{options.inspect}"
 
 
     warnings = false
@@ -56,7 +56,7 @@ class CLI < Thor
       #exit
 
       Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name, opts)
+        server_settings = Settings.load_settings_for_server(name)
 
         #puts "s: #{server_settings.inspect}"
         #exit
@@ -135,7 +135,7 @@ class CLI < Thor
       puts "config: #{Config.inspect}"
 
       Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name, opts)
+        server_settings = Settings.load_settings_for_server(name)
 
         puts "s: #{server_settings.inspect}"
         exit
@@ -198,7 +198,7 @@ class CLI < Thor
       Config.load(options)
 
       Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name, opts)
+        server_settings = Settings.load_settings_for_server(name)
 
         Manager.destroy_container(name, server_settings)
         Manager.run_container(name, server_settings)
@@ -258,7 +258,7 @@ class CLI < Thor
       Config.load(options)
 
       Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name, opts)
+        server_settings = Settings.load_settings_for_server(name)
 
         Manager.destroy_container(name, server_settings)
       end
@@ -318,7 +318,7 @@ class CLI < Thor
       Config.load(options)
 
       Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name, opts)
+        server_settings = Settings.load_settings_for_server(name)
 
         Manager.stop_container(name, server_settings)
       end

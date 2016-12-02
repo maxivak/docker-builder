@@ -36,7 +36,10 @@ module DockerBuilder
 
       # Loads the user's +config.rb+ and all model files.
       def load(opts = {})
+        puts "update opts from #{opts}"
         update(opts)  # from the command line
+
+        puts "config file: #{config_file}"
 
         unless File.exist?(config_file)
           #raise Error, "Could not find configuration file: '#{config_file}'."
@@ -132,8 +135,17 @@ module DockerBuilder
 
         # options
         opts.each do |name, v|
+          #puts "set var #{name} == #{v}"
           set_variable(name, v)
         end
+
+        # config file
+        set_path_variable("config_file", options['config_file'], DEFAULTS['config_file'], new_root)
+
+
+
+
+        puts "config == #{config_file}"
       end
 
       # Sets the @root_path to the given +path+ and returns it.

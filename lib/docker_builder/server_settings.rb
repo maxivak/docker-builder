@@ -250,6 +250,11 @@ class ServerSettings
     File.expand_path("clients/#{image_name}.json", dir_server_root)
   end
 
+  ###
+
+  def make_path_full(path)
+    File.expand_path("#{path}", dir_server_root)
+  end
 
 end
 

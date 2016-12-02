@@ -1,31 +1,29 @@
 # Docker builder
 
-Tool to build and install Docker containers with Chef, Dockerfile and other tools.
+Tool to build and install Docker containers with Chef, Dockerfile and other provisioning tools.
 
-Config files are in Ruby.
+Features:
+* Config files are in Ruby.
+* Manage complexity of running Docker containers for your environment in one place.
+* Manage multiple containers
 
-Manage complexity of running Docker containers for your environment in one place.
+
+Other tools:
+* docker-composer - with configs in yml
+
+
 
 # Overview
 
-Process of building and running container on the host machine:
-* Build Docker image
-    * it will create a Docker image on the host machine
-    
-* Run Docker container
-    * provision host machine - run scripts locally on the host machine
-    (recipe install_host.rb)
-    * run container (docker run)
-    * provision container - run script in the container
-    (recipe install.rb)
 
-* Install systemd service to run Docker container (optional)
+Build Docker image:
+* from Dockerfile
+* Chef provisioning (machine_image) 
 
-* Start/Stop container
+Provision during installation container on the host machine by:
+* running shell script inside container
+* running Chef script inside container with Chef provisioning
 
-* Destroy container
-
-* Destroy image
 
 
 
@@ -154,8 +152,35 @@ http://localhost:8080
 
 # Basic usage
 
-## Server with Chef provisioning
+# Provision wich shell script
 
+* put scripts in `/path/to/project/ <<server_name>> / scripts / install.sh`
+
+
+# Provisioning with Chef
+
+Process of building and running container on the host machine:
+* Build Docker image
+    * it will create a Docker image on the host machine
+    
+* Run Docker container
+    * provision host machine - run scripts locally on the host machine
+    (recipe install_host.rb)
+    * run container (docker run)
+    * provision container - run script in the container
+    (recipe install.rb)
+
+* Install systemd service to run Docker container (optional)
+
+* Start/Stop container
+
+* Destroy container
+
+* Destroy image
+
+
+## Install server with Chef provisioning
+ 
 * generate directory structure using generator
 ```
 docker-builder generate --name=nginx --type=chef
@@ -288,7 +313,7 @@ in folder with servers:
 
 cookbook_path cookbook_path+[
     '/path/to/my/cookbooks',
-    '/path/to/my//other/cookbooks',
+    '/path/to/my/other/cookbooks',
 ]
 
 ```
