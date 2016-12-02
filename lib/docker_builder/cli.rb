@@ -33,7 +33,7 @@ class CLI < Thor
   method_option :config_file,
                 :aliases  => '-c',
                 :type     => :string,
-                :default  => '',
+                :default  => 'config.rb',
                 :desc     => 'Path to your config.rb file.'
 
   def build
@@ -121,7 +121,7 @@ class CLI < Thor
   method_option :config_file,
                 :aliases  => '-c',
                 :type     => :string,
-                :default  => '',
+                :default  => 'config.rb',
                 :desc     => 'Path to your config.rb file.'
 
   def destroy_image
@@ -181,7 +181,7 @@ class CLI < Thor
   method_option :config_file,
                 :aliases  => '-c',
                 :type     => :string,
-                :default  => '',
+                :default  => 'config.rb',
                 :desc     => 'Path to your config.rb file.'
 
   def up
@@ -241,7 +241,7 @@ class CLI < Thor
   method_option :config_file,
                 :aliases  => '-c',
                 :type     => :string,
-                :default  => '',
+                :default  => 'config.rb',
                 :desc     => 'Path to your config.rb file.'
 
   def destroy
@@ -301,7 +301,7 @@ class CLI < Thor
   method_option :config_file,
                 :aliases  => '-c',
                 :type     => :string,
-                :default  => '',
+                :default  => 'config.rb',
                 :desc     => 'Path to your config.rb file.'
 
   def stop
