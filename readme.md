@@ -26,6 +26,14 @@ Provision during installation container on the host machine by:
 
 
 
+# Installation
+
+* Install gem:
+```
+gem install docker-builder
+```
+
+
 
 # Quickstart
 
@@ -225,13 +233,6 @@ http://localhost:8080
 ```
 
 
-# Installation
-
-
-Install gem:
-```
-$ gem install docker-builder
-```
 
 
 
@@ -377,7 +378,40 @@ data for nginx server:
 
 # Build container
 
+## Build from Dockerfile
+
+* config for server
+```
+'build' => {
+      'build_type' => 'Dockerfile',
+      "image_name" => "myname",
+
+      "base_image" => {} # not used
+  },
+```
+
 # Run container
+
+
+## Run from existing image
+
+* config for server
+```
+'build' => {
+      'build_type' => 'none',
+      "image_name" => "myname",
+
+      "base_image" => {
+          "name" => "mysql", 
+          "repository" => "mysql", 
+          "tag" => "3.4.9"
+      },
+  },
+      
+```
+
+it will NOT build a new Docker image.
+
 
 
 ## Run Docker container with Chef
