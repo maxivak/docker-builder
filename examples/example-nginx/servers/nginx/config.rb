@@ -18,8 +18,9 @@ add 'install', {
         'script' => 'install_host',
     },
     "node" => {
-        'script_type' => 'chef_recipe',
-        'script' => 'install',
+        #'script_type' => 'chef_recipe',
+        'script_type' => 'shell',
+        #'script' => 'install',
     }
 
 
