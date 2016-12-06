@@ -102,7 +102,7 @@ class ServerSettings
     if v =~ /^\./
       s = v.gsub /^\.\//, ''
 
-      res = "$PWD/#{self.name}/#{s}"
+      res = "$PWD/servers/#{self.name}/#{s}"
 
     elsif v =~ /^\/\//
       res = self.attributes['common']['dir_data']+(v.gsub /^\/\//, '')
@@ -216,6 +216,7 @@ class ServerSettings
     s = attributes['docker']['run_extra_options'] || ''
     s
   end
+
 
 
   ###
