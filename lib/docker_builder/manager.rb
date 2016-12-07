@@ -64,6 +64,10 @@ class Manager
     puts "creating and running container.."
     #settings = load_settings(server_name)
 
+    # destroy
+    destroy_container(server_name, settings)
+
+
     # provision host before running container
     res_install = _install_container_provision_host(settings)
 
@@ -244,9 +248,6 @@ class Manager
     #
     cmd %Q(cd #{Config.root_path} && chef exec knife node delete #{settings.chef_node_name}  -y -c #{chef_config_knife_path})
 
-    #cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} chef_destroy_image.rb)
-    #cmd %Q(SERVER_NAME=#{settings.name} SERVER_PATH=#{settings.dir_server_root} chef exec chef-client -z -N #{settings.image_name} -j #{settings.filename_config_json} -c #{chef_config_knife_path} #{chef_recipe_path('chef_destroy_image.rb')} )
-
     res_recipe = run_chef_recipe(settings, 'chef_destroy_image.rb')
 
     chef_remove_data(settings)
@@ -284,6 +285,9 @@ class Manager
 
 
   def self.destroy_container_chef(settings)
+    # destroy temp container
+    cmd %Q(docker rm -f chef-converge.#{settings.image_name} )
+
     #
     res_chef = run_chef_recipe(settings, 'chef_destroy_container.rb')
     #cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} chef_destroy_container.rb)
