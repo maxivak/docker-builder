@@ -21,16 +21,17 @@ node_name     my_server_name
 knife[:chef_node_name] = my_server_name
 
 server_base_dir = ENV['SERVER_PATH']
-server_cookbooks_path = File.expand_path('cookbooks', server_base_dir)
-
 
 #client_key               "#{current_dir}/dummy.pem"
 #validation_client_name   "validator"
 
+### cookbooks
+
+server_cookbooks_path = File.expand_path('cookbooks', server_base_dir)
+
 cookbooks_paths = [
     server_cookbooks_path,
 
-    #'/mnt/data/projects/mmx/docker-builder/examples/example-nginx/servers/nginx/cookbooks',
     #File.expand_path('../temp-cookbooks', root),
     #File.join(root, '../cookbooks'),
     #File.join(root, '../', node_name, 'cookbooks'),
@@ -44,7 +45,7 @@ cookbooks_paths = [
 
 cookbooks_paths.reject!{|f| !Dir.exists?(f)}
 
-#puts "cookbooks: #{cookbooks_paths.inspect}"
+puts "cookbooks: #{cookbooks_paths.inspect}"
 
 
 
@@ -66,7 +67,7 @@ end
 
 cookbook_path cookbook_path+cookbooks_paths
 
-puts "FINAL cookbooks: #{cookbook_path}"
+#puts "FINAL cookbooks: #{cookbook_path}"
 
 # node name
 knife[:force] = true

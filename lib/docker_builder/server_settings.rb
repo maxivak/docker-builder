@@ -74,6 +74,11 @@ class ServerSettings
       return "#{bi['name']}:#{bi['tag']}"
     end
 
+    #
+    if attributes['build']['image_name']
+      return "#{attributes['common']['image_prefix']}#{attributes['build']['image_name']}"
+    end
+
     "#{attributes['common']['image_prefix']}#{s}"
   end
 
@@ -284,7 +289,7 @@ class Settings
 
     #
     f = file_settings_for_server(name)
-    puts "loading server settings from #{f}"
+    #puts "loading server settings from #{f}"
     t = File.read(f) rescue ''
     eval(t, settings.get_binding)
 
@@ -293,10 +298,6 @@ class Settings
 
     # from common config
     settings.attributes['common'] = Config.options[:common]
-
-    #puts "config options  = #{Config.options}"
-    #puts "settings000 = #{settings.attributes}"
-    #exit
 
     settings
   end

@@ -126,7 +126,7 @@ module DockerBuilder
 
         new_root = root_path.empty? ? false : set_root_path(root_path)
 
-        puts "FINAL root= #{@root_path}"
+        #puts "FINAL root= #{@root_path}"
         #exit
 
         DEFAULTS.each do |name, ending|

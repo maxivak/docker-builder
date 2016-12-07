@@ -220,6 +220,8 @@ class Manager
 
 
   def self.destroy_image(server_name, settings={})
+    puts "destroying image for server #{server_name}"
+
     cmd %Q(docker rmi #{settings.image_name} )
     cmd %Q(docker rm -f chef.converge.#{settings.image_name} )
 

@@ -7,33 +7,28 @@ require 'chef/provisioning'
 
 #
 server_name = ENV['SERVER_NAME']
-#puts "server: #{server_name}"
-#puts "node: #{node['docker'].inspect}"
-#exit
-
 
 # settings
 docker_options = {
     base_image: node['build']['base_image'],
-    #base_image: 'nginx:1.10',
     privileged: true,
     command: node['docker']['command'] || '',
-    #command: "nginx -g 'daemon off;'",
-    #command: "",
-
 }
 
-#puts "image = #{settings.image_name}"
-#puts "opt = #{docker_options}"
+#puts "server: #{server_name}"
+#puts "node base = #{node['base']}"
+#puts "image = #{node['base']['image_name']}"
+#puts "node attr: #{node['attributes']}"
+#puts "docker opt = #{docker_options}"
 #exit
 
-
-
-
+image_name = node['base']['image_name']
+#image_name = 'example-my'
 
 ### docker image
 with_driver 'docker'
-machine_image node['base']['image_name'] do
+#machine_image node['base']['image_name'] do
+machine_image image_name do
   action :create
 
   #tag '0.1'

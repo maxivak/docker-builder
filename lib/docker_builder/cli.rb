@@ -37,10 +37,10 @@ class CLI < Thor
                 :desc     => 'Path to your config.rb file.'
 
   def build
-    puts "building..."
+    puts "building images..."
 
     opts = options
-    puts "opt from command line: #{options.inspect}"
+    #puts "opt from command line: #{options.inspect}"
 
 
     warnings = false
@@ -130,20 +130,16 @@ class CLI < Thor
     warnings = false
     errors = false
 
+    servers = nil
+
     begin
       Config.load(options)
-      puts "config: #{Config.inspect}"
 
       Config.servers.each do |name, opts|
         server_settings = Settings.load_settings_for_server(name)
 
-        puts "s: #{server_settings.inspect}"
-        exit
-
         Manager.destroy_image(name, server_settings)
       end
-
-      #raise Error, "No servers found " + "'#{ triggers.join(',') }'." if models.empty?
 
     rescue Exception => err
       puts "exception: #{err.inspect}"
