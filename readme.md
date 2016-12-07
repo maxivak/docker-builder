@@ -12,8 +12,31 @@ Other tools:
 * docker-composer - with configs in yml
 
 
+Docker-builder is similar to docker-compose but has some more functionality to customize installation of servers on the host.
+
 
 # Overview
+
+Process of installing server in Docker container consists of the following stages:
+
+Process of building and running container on the host machine:
+* Build Docker image
+    * it will create a Docker image on the host machine
+    * build using Dockerfile or Chef provisioning
+    
+* Run Docker container
+    * provision host machine - run scripts locally on the host machine. It can be shell script of Chef recipe
+    * run container - `docker run`
+    * provision container - run script inside the container. It can be shell script of Chef recipe
+
+* Install systemd service on the host machine to run Docker container automatically (optional)
+
+* Start/Stop container
+
+* Destroy container
+
+* Destroy image
+
 
 
 Build Docker image:
