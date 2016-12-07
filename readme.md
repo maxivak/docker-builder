@@ -38,6 +38,11 @@ Process of building and running container on the host machine:
 * Destroy image
 
 
+Concepts of running Docker containers:
+* you can rerun containers without losing data. Data is stored on the host machine and shared with container.
+
+
+
 
 Build Docker image:
 * from Dockerfile
