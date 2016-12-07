@@ -345,6 +345,17 @@ class Manager
   end
 
   ###
+  def self.clear_cache(name, settings)
+    # common cache
+    cmd("rm -rf ~/.chef/cache")
+    cmd("rm -rf ~/.chef/local-mode-cache")
+
+    # cache for server
+    cmd("rm -rf #{settings.dir_server_root}/.chef/local-mode-cache")
+    #cmd("rm -rf ~/.chef/package-cache")
+  end
+
+  ###
 
   def self.cmd(s)
     puts "running: #{s}"

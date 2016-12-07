@@ -447,3 +447,12 @@ servers({
 }
 ```
 
+
+
+# Clear cache
+
+Sometimes you need to clear cache with server info in chef-zero server
+
+```
+docker-builder clear_cache
+```

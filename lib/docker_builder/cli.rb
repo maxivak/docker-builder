@@ -329,6 +329,63 @@ class CLI < Thor
 
   end
 
+  ##
+  # [clear_cache]
+  #
+  #
+  desc 'clear_cache', 'clear cache'
+
+  long_desc <<-EOS.gsub(/^ +/, '')
+  clear_cache
+  EOS
+
+  method_option :server,
+                :aliases  => ['-s', '--server'],
+                :required => false,
+                :type     => :string,
+                :desc     => "Server name"
+
+  method_option :root_path,
+                :aliases  => '-r',
+                :type     => :string,
+                :default  => '',
+                :desc     => 'Root path to base all relative path on.'
+
+  method_option :config_file,
+                :aliases  => '-c',
+                :type     => :string,
+                :default  => 'config.rb',
+                :desc     => 'Path to your config.rb file.'
+
+  def clear_cache
+    puts "clear_cache..."
+
+    opts = options
+
+    warnings = false
+    errors = false
+
+    servers = nil
+    begin
+      Config.load(options)
+
+      Config.servers.each do |name, opts|
+        server_settings = Settings.load_settings_for_server(name)
+
+        Manager.clear_cache(name, server_settings)
+      end
+
+    rescue Exception => err
+      puts "exception: #{err.inspect}"
+      raise err
+      exit(3)
+    end
+
+    exit(errors ? 2 : 1) if errors || warnings
+
+  end
+
+
   ### generators
 
   ##

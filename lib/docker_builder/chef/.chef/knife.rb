@@ -45,7 +45,7 @@ cookbooks_paths = [
 
 cookbooks_paths.reject!{|f| !Dir.exists?(f)}
 
-puts "cookbooks: #{cookbooks_paths.inspect}"
+#puts "cookbooks: #{cookbooks_paths.inspect}"
 
 
 
