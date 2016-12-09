@@ -353,6 +353,11 @@ class Manager
     # cache for server
     cmd("rm -rf #{settings.dir_server_root}/.chef/local-mode-cache")
     #cmd("rm -rf ~/.chef/package-cache")
+
+    # cache in gem
+    cmd("rm -rf #{Config.dir_gem_root}/lib/docker_builder/chef/local-mode-cache")
+
+
   end
 
   ###
