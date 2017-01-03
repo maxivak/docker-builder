@@ -59,7 +59,6 @@ knife_custom_files = [
 
 knife_custom_files.each do |file_knife_custom|
   if ::File.exist?(file_knife_custom)
-    #puts "load from file #{file_knife_custom}"
     Chef::Config.from_file(file_knife_custom)
   end
 end
