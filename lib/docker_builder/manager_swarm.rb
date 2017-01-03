@@ -21,7 +21,6 @@ module DockerBuilder
 
       # create service
       docker_opts = settings.attributes['docker']
-      puts "ooo: #{docker_opts}"
 
       run_opts = []
       run_opts << "--network #{docker_opts['swarm_network']}" if docker_opts['swarm_network']
