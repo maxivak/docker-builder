@@ -210,8 +210,6 @@ class Manager
 
     # run chef
     #s_run = %Q(cd #{settings.name} && chef-client -z -j config.json -c ../.chef/knife.rb -N #{settings.name} ../lib/chef_container_run.rb)
-    #s_run = %Q(cd #{settings.name} && SERVER_NAME=#{settings.name} chef-client -z -j  config.common.json -N #{settings.name} ../container.rb)
-    #s_run = %Q(cd #{settings.name} && SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} ../container.rb)
 
     # good - 2016-nov-19
     #cmd %Q(SERVER_NAME=#{settings.name} chef-client -z -N #{settings.name} chef_run_container.rb)
@@ -363,14 +361,7 @@ class Manager
   ###
 
   def self.cmd(s)
-    puts "running: #{s}"
-
-    res = nil
-    Bundler.with_clean_env do
-      res = `#{s}`
-    end
-
-    puts "#{res}"
+    Command.cmd(s)
   end
 
 

@@ -142,10 +142,6 @@ module DockerBuilder
         # config file
         set_path_variable("config_file", options['config_file'], DEFAULTS['config_file'], new_root)
 
-
-
-
-        puts "config == #{config_file}"
       end
 
       # Sets the @root_path to the given +path+ and returns it.

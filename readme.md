@@ -459,7 +459,8 @@ Packer is a tool for creating identical machine images for multiple platforms fr
 
 # Docker options for running container
 
-* additional options for docker run command 
+* `run_extra_options` - additional options for docker run command
+ 
 * hostname
 
 ```
@@ -484,3 +485,25 @@ Sometimes you need to clear cache with server info in chef-zero server
 ```
 docker-builder clear_cache
 ```
+
+
+# Run in swarm mode
+
+* commands
+
+docker-builder :up_swarm
+
+docker-builder :destroy_swarm
+
+
+* config
+
+```
+docker: {
+    # options here...
+}
+```
+
+* swarm_network - network name
+* swarm_options - options to pass to docker service create command
+
