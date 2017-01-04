@@ -36,8 +36,6 @@ cookbooks_paths = [
     #File.join(root, '../cookbooks'),
     #File.join(root, '../', node_name, 'cookbooks'),
 
-    #'/mnt/data/projects/mmx/chef-repo/cookbooks-common',
-    #'/mnt/data/projects/mmx/chef-repo/cookbooks',
     #'/work/chef-repo/cookbooks-common',
     #'/work/chef-repo/cookbooks',
 
@@ -51,10 +49,15 @@ cookbooks_paths.reject!{|f| !Dir.exists?(f)}
 
 
 # load another knife file
-knife_custom_files = [
-    File.expand_path(".chef/knife.rb", server_base_dir),
-    File.expand_path("../../.chef/knife.rb", server_base_dir),
-]
+knife_custom_files = []
+
+if server_base_dir
+  knife_custom_files = [
+      File.expand_path(".chef/knife.rb", server_base_dir),
+      File.expand_path("../../.chef/knife.rb", server_base_dir),
+  ]
+end
+
 #File.expand_path("../../examples/example-nginx/servers/#{my_server_name}/.chef/knife.rb", __FILE__)
 
 knife_custom_files.each do |file_knife_custom|
