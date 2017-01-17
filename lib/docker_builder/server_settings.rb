@@ -137,6 +137,15 @@ class ServerSettings
   end
 
 
+  ### docker swarm services
+
+  def service_name(name=nil)
+    name ||= attributes['name']
+    s = name
+
+    "#{service_prefix}#{s}"
+  end
+
   ###
   def docker_volumes
     a = attributes['docker']['volumes'] || []
