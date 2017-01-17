@@ -57,6 +57,18 @@ class ServerSettings
     attributes['common']['prefix']
   end
 
+  def container_prefix
+    "#{attributes['common']['prefix']}#{attributes['common']['container_prefix']}"
+  end
+
+  def image_prefix
+    "#{attributes['common']['prefix']}#{attributes['common']['image_prefix']}"
+  end
+
+  def service_prefix
+    "#{attributes['common']['prefix']}#{attributes['common']['service_prefix']}"
+  end
+
 
   ###
 
@@ -76,10 +88,10 @@ class ServerSettings
 
     #
     if attributes['build']['image_name']
-      return "#{attributes['common']['image_prefix']}#{attributes['build']['image_name']}"
+      s = "#{attributes['build']['image_name']}"
     end
 
-    "#{attributes['common']['image_prefix']}#{s}"
+    "#{image_prefix}#{s}"
   end
 
   def need_build?
@@ -94,11 +106,11 @@ class ServerSettings
     name ||= attributes['name']
     s = name
 
-    "#{attributes['common']['prefix']}#{s}"
+    "#{container_prefix}#{s}"
   end
 
   def chef_node_name
-    "#{attributes['common']['prefix']}#{name}"
+    "#{prefix}#{name}"
   end
 
   def volume_path_local(v)
@@ -188,7 +200,7 @@ class ServerSettings
 
     # fix
     res = a.map do |r|
-      ["#{attributes['common']['prefix']}#{r[0]}", r[1]]
+      ["#{container_prefix}#{r[0]}", r[1]]
     end
 
     res

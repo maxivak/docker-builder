@@ -5,7 +5,7 @@ module DockerBuilder
       puts "destroying service #{server_name}..."
 
       #
-      cmd %Q(docker service rm #{settings.container_name} )
+      cmd %Q(docker service rm #{settings.service_name} )
 
       #
       return true
@@ -35,7 +35,7 @@ module DockerBuilder
       run_opts << docker_opts['swarm_options']
 
       cmd %Q(docker service create \
---name #{settings.container_name} \
+--name #{settings.service_name} \
 #{run_opts.join(' ')} \
 #{settings.image_name} #{settings['docker']['command']}
 )

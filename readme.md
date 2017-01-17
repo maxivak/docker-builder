@@ -507,3 +507,31 @@ docker: {
 * swarm_network - network name
 * swarm_options - options to pass to docker service create command
 
+
+
+# Options
+
+## prefix
+
+prefix for image names, container names, and service names (for swarm mode)
+
+* prefix - common prefix. Added to all names
+* container_prefix - prefix for containers
+* image_prefix - prefix for images
+* service_prefix  - prefix for services
+    
+    
+Example:
+* container name = $prefix$container_prefix$name
+
+```
+prefix='my-'
+container_prefix='test-'
+
+container name will be like 
+my-test-redis
+
+```
+
+    
+
