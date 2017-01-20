@@ -8,7 +8,7 @@ module DockerBuilder
 
 
   ##
-  # Require Backup base files
+  # Require base files
   %w{
     config
     command

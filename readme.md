@@ -188,7 +188,7 @@ http://localhost:8080
 
 # Basic usage
 
-# Provision wich shell script
+# Provision with shell script
 
 * put scripts in `/path/to/project/ <<server_name>> / scripts / install.sh`
 
@@ -328,7 +328,8 @@ Config files:
 Build types:
 * 'none' - no build required
 * 'Dockerfile' - using Dockerfile and docker build command
-* 'chef' - using Chef provisioning
+* 'chef' - using Chef provisioning (gem chef-provisioning-docker)
+* 'packer' - using Packer tool
 
 
 # Chef provisioning
@@ -417,6 +418,36 @@ data for nginx server:
       "base_image" => {} # not used
   },
 ```
+
+
+## Build with Packer
+
+* config for server
+```
+'build' => {
+      'build_type' => 'packer',
+      "image_name" => "myname",
+
+      "base_image" => {
+        "name" => "nginx",        
+        "repository" => "nginx",        
+        "tag" => "1.10"
+      },
+      
+      "packer" => { options for packer }
+  },
+```
+
+* options for packer
+
+* cookbook_paths - list of paths
+* recipe_name
+
+
+* examples:
+```
+```
+
 
 # Run container
 

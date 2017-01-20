@@ -30,6 +30,8 @@ class Manager
       return build_image_with_dockerfile(settings)
     elsif t=='chef'
       return build_image_with_chef(settings)
+    elsif t=='packer'
+      return build_image_with_packer(settings)
     end
   end
 
@@ -55,6 +57,15 @@ class Manager
     res_recipe = run_chef_recipe(settings, 'chef_build_image.rb')
   end
 
+
+  def self.build_image_with_packer(settings)
+    require_relative '../../lib/docker_builder/builder/packer'
+
+    puts "build image with packer"
+
+    builder = DockerBuilder::Builder::Packer.new(settings)
+    builder.build
+  end
 
 
 
