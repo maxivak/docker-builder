@@ -79,14 +79,14 @@ class ServerSettings
 
 
   def image_name
-    s = attributes['name']
-
     if !need_build?
       bi = attributes['build']['base_image']
       return "#{bi['name']}:#{bi['tag']}"
     end
 
     #
+    s = attributes['name']
+
     if attributes['build']['image_name']
       s = "#{attributes['build']['image_name']}"
     end

@@ -48,7 +48,6 @@ module DockerBuilder
       end
 
       def build_packer_config
-
         res = {}
 
         res['variables'] = {}
