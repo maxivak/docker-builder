@@ -19,16 +19,11 @@ module DockerBuilder
 
 
       def initialize(_settings)
-        puts "init: #{_settings}"
         self.server = _settings
 
-        #puts "set settings: #{server}"
-        #puts "set settings: #{server}"
       end
 
       def build
-        #puts "build with settings: #{server}"
-
         # config json
         save_packer_config
 
