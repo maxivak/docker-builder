@@ -196,8 +196,14 @@ class CLI < Thor
       Config.servers.each do |name, opts|
         server_settings = Settings.load_settings_for_server(name)
 
-        Manager.destroy_container(name, server_settings)
-        Manager.run_container(name, server_settings)
+        if server_settings.is_swarm_mode?
+          ManagerSwarm.destroy_service(name, server_settings)
+          ManagerSwarm.create_service(name, server_settings)
+        else
+          Manager.destroy_container(name, server_settings)
+          Manager.run_container(name, server_settings)
+        end
+
       end
 
     rescue Exception => err
@@ -256,7 +262,12 @@ class CLI < Thor
       Config.servers.each do |name, opts|
         server_settings = Settings.load_settings_for_server(name)
 
-        Manager.destroy_container(name, server_settings)
+        if server_settings.is_swarm_mode?
+          ManagerSwarm.destroy_service(name, server_settings)
+        else
+          Manager.destroy_container(name, server_settings)
+        end
+
       end
 
     rescue Exception => err
@@ -330,116 +341,6 @@ class CLI < Thor
   end
 
 
-  ### swarm mode
-
-  ##
-  # [up_swarm]
-  #
-  #
-  desc 'up_swarm', 'Run Docker container in swarm mode'
-
-  long_desc <<-EOS.gsub(/^ +/, '')
-  Run Docker container in swarm mode.
-  EOS
-
-  method_option :server,
-                :aliases  => ['-s', '--server'],
-                :required => false,
-                :type     => :string,
-                :desc     => "Server name"
-
-  method_option :root_path,
-                :aliases  => '-r',
-                :type     => :string,
-                :default  => '',
-                :desc     => 'Root path to base all relative path on.'
-
-  method_option :config_file,
-                :aliases  => '-c',
-                :type     => :string,
-                :default  => 'config.rb',
-                :desc     => 'Path to your config.rb file.'
-
-  def up_swarm
-    puts "running..."
-
-    warnings = false
-    errors = false
-
-
-    servers = nil
-    begin
-      Config.load(options)
-
-      Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name)
-
-        ManagerSwarm.destroy_service(name, server_settings)
-        ManagerSwarm.create_service(name, server_settings)
-      end
-
-    rescue Exception => err
-      puts "exception: #{err.inspect}"
-      raise err
-      exit(3)
-    end
-
-    exit(errors ? 2 : 1) if errors || warnings
-
-  end
-
-  ##
-  # [destroy_swarm]
-  #
-  #
-  desc 'destroy_swarm', 'Remove service in Docker swarm mode'
-
-  long_desc <<-EOS.gsub(/^ +/, '')
-  Remove service in Docker swarm mode
-  EOS
-
-  method_option :server,
-                :aliases  => ['-s', '--server'],
-                :required => false,
-                :type     => :string,
-                :desc     => "Server name"
-
-  method_option :root_path,
-                :aliases  => '-r',
-                :type     => :string,
-                :default  => '',
-                :desc     => 'Root path to base all relative path on.'
-
-  method_option :config_file,
-                :aliases  => '-c',
-                :type     => :string,
-                :default  => 'config.rb',
-                :desc     => 'Path to your config.rb file.'
-
-  def destroy_swarm
-    puts "destroying..."
-
-    warnings = false
-    errors = false
-
-    servers = nil
-    begin
-      Config.load(options)
-
-      Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name)
-        ManagerSwarm.destroy_service(name, server_settings)
-      end
-
-    rescue Exception => err
-      puts "exception: #{err.inspect}"
-      raise err
-      exit(3)
-    end
-
-    exit(errors ? 2 : 1) if errors || warnings
-
-  end
 
 
 

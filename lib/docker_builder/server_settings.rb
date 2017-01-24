@@ -244,6 +244,12 @@ class ServerSettings
   end
 
 
+  ###
+  def is_swarm_mode?
+    v = attributes["docker"]["swarm_mode"]
+    return false if v.nil?
+    return v
+  end
 
   ###
   def [](key)
