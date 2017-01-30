@@ -19,6 +19,9 @@ module DockerBuilder
       destroy_service(server_name, settings)
 
 
+      # prepare
+      create_volumes_dirs(settings)
+
       # create service
       docker_opts = settings.attributes['docker']
 
@@ -42,6 +45,15 @@ module DockerBuilder
     end
 
 
+    # volumes
+    def self.create_volumes_dirs(settings)
+      settings.docker_volumes.each do |r|
+        dirpath = "#{r[0]}"
+        if !Dir.exists?(dirpath)
+          FileUtils.mkdir_p(dirpath) rescue nil
+        end
+      end
+    end
 
     # helpers
 

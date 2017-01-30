@@ -484,7 +484,7 @@ it will NOT build a new Docker image.
 
 * packer - https://github.com/mitchellh/packer
 
-Packer is a tool for creating identical machine images for multiple platforms from a single source configuration.
+Packer is a tool for creating machine images for multiple platforms from a single source configuration.
 
 
 

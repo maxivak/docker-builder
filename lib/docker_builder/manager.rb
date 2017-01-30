@@ -149,7 +149,7 @@ class Manager
       #_provision_container_chef_recipe(settings)
     elsif script_type && script_type=='shell'
       # docker run
-      cmd %Q(docker run -d --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
+      create_and_run_container(settings)
 
       # provision with shell script
       run_shell_script_in_container(settings, "install.sh")
@@ -159,22 +159,47 @@ class Manager
       #_run_container_docker(settings)
 
       # docker run
-      cmd %Q(docker run -d --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
+      create_and_run_container(settings)
 
     end
-
-
-    # fix hosts
-    #puts "adding hosts..."
-    #puts "a= #{settings.attributes}"
-
-    container_hosts = settings.node['hosts'] || []
-    container_hosts.each do |r|
-      cmd %Q(docker exec #{settings.container_name} bash -c 'echo "#{r[0]} #{r[1]}" >>  /etc/hosts')
-    end
-
 
     true
+  end
+
+  def self.create_and_run_container(settings)
+    #cmd %Q(docker run -d --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
+
+    # create
+    cmd %Q(docker create --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
+
+    # second network
+    network2 = settings['docker']['network_secondary']
+    if network2
+      ip = network2['ip']
+      s_ip = "--ip #{ip}" if ip
+      cmd %Q(docker network connect #{s_ip}  #{network2['net']} #{settings.container_name})
+    end
+
+    # start
+    cmd %Q(docker start #{settings.container_name})
+
+    # fixes
+    if network2
+      gateway = network2['gateway']
+
+      if gateway
+        # fix default gateway
+        cmd %Q(docker exec #{settings.container_name} ip route change default via #{gateway} dev eth1)
+      end
+
+    end
+
+    # fix hosts
+    container_hosts = settings['docker']['hosts'] || []
+    container_hosts.each do |r|
+      #cmd %Q(docker exec #{settings.container_name} bash -c 'echo "#{r[0]} #{r[1]}" >>  /etc/hosts')
+      cmd %Q(docker exec #{settings.container_name} sh -c 'echo "#{r[0]} #{r[1]}" >>  /etc/hosts')
+    end
   end
 
 
