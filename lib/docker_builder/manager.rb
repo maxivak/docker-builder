@@ -136,20 +136,34 @@ class Manager
   def self._run_container(settings)
     puts "run container ..."
 
-    script_type = (settings['install']['node']['script_type'] rescue nil)
+    install_node_script_type = (settings['install']['node']['script_type'] rescue nil)
+    bootstrap_type = (settings['install']['bootstrap']['type'] rescue nil)
 
-    puts "script type: #{script_type}"
+    #
+    create_container(settings)
+
+    # before start
+    if bootstrap_type && bootstrap_type=='chef'
+      _bootstrap_container_prepare(settings)
+    end
 
 
-    if script_type && script_type=='chef_recipe'
+    # start
+    start_container(settings)
+
+
+    # provision after start
+
+    if install_node_script_type && install_node_script_type=='chef_recipe'
       # run container and provision with chef
-      _run_container_chef(settings)
+      #_run_container_chef(settings)
 
       # ???
       #_provision_container_chef_recipe(settings)
-    elsif script_type && script_type=='shell'
+
+    elsif install_node_script_type && install_node_script_type=='shell'
       # docker run
-      create_and_run_container(settings)
+      #create_and_run_container(settings)
 
       # provision with shell script
       run_shell_script_in_container(settings, "install.sh")
@@ -159,14 +173,15 @@ class Manager
       #_run_container_docker(settings)
 
       # docker run
-      create_and_run_container(settings)
+      #create_and_run_container(settings)
 
     end
+
 
     true
   end
 
-  def self.create_and_run_container(settings)
+  def self.create_container(settings)
     #cmd %Q(docker run -d --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
 
     # create
@@ -179,9 +194,19 @@ class Manager
       s_ip = "--ip #{ip}" if ip
       cmd %Q(docker network connect #{s_ip}  #{network2['net']} #{settings.container_name})
     end
+  end
 
+  def self.start_container(settings)
     # start
     cmd %Q(docker start #{settings.container_name})
+
+    # setup
+    setup_container_after_start(settings)
+  end
+
+  def self.setup_container_after_start(settings)
+    # second network
+    network2 = settings['docker']['network_secondary']
 
     # fixes
     if network2
@@ -226,6 +251,14 @@ class Manager
 
 
   ### provision
+
+  def self._bootstrap_container_prepare(settings)
+    require_relative '../../lib/docker_builder/provisioner/provisioner_chef'
+
+    provisioner = DockerBuilder::Provisioner::ProvisionerChef.new(settings)
+    provisioner.copy_config_file
+
+  end
 
   def self._provision_container_chef_recipe(settings)
     puts "provisioning container #{settings.container_name}"
@@ -332,14 +365,6 @@ class Manager
   end
 
 
-  def self.start_container(server_name)
-    settings = load_settings(server_name)
-
-    #
-    cmd %Q(docker start #{settings.container_name} )
-
-    return true
-  end
 
 
   ### stop container

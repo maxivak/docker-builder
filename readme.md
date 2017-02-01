@@ -566,3 +566,21 @@ my-test-redis
 
     
 
+
+# Bootstrap
+
+* first provision of container
+
+
+## Provision with chef
+
+docker-builder up -s server_name
+
+Process:
+* docker create with docker options
+    * entrypoint: /etc/bootstrap
+* generate config with node attributes for chef and save it to temp/boostrap-__server__.json
+* copy config file to container to /opt/bootstrap/config.json
+* docker start 
+* when container starts it runs /etc/boostrap which
+    * runs chef-client to provision server first time
