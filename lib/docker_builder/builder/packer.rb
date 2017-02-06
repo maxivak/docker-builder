@@ -56,12 +56,21 @@ module DockerBuilder
 
         bi = settings.attributes['build']['base_image']
         base_image_name = "#{bi['name']}:#{bi['tag']}"
-        res['builders'] << {
-                pull: false,
-                type: "docker",
-                image: base_image_name,
-                commit: true
-            }
+        builder1 = {
+            pull: false,
+            type: "docker",
+            image: base_image_name,
+            commit: true
+        }
+
+        # changes
+        entrypoint = settings.attributes['build']['entrypoint']
+        if entrypoint
+          builder1['changes'] ||= []
+          builder1['changes'] << "ENTRYPOINT #{entrypoint}"
+        end
+
+        res['builders'] << builder1
 
         #
         recipe_name = settings['build']['packer']['recipe_name'] || 'build'
