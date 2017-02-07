@@ -136,7 +136,6 @@ class Manager
   def self._run_container(settings)
     puts "run container ..."
 
-    install_node_script_type = (settings['install']['node']['script_type'] rescue nil)
     bootstrap_type = (settings['install']['bootstrap']['type'] rescue nil)
 
     #
@@ -153,6 +152,8 @@ class Manager
 
 
     # provision after start
+    install_node_script_type = (settings['install']['node']['script_type'] rescue nil)
+    install_bootstrap_script_type = (settings['install']['bootstrap']['script_type'] rescue nil)
 
     if install_node_script_type && install_node_script_type=='chef_recipe'
       # run container and provision with chef
@@ -175,6 +176,14 @@ class Manager
       # docker run
       #create_and_run_container(settings)
 
+    end
+
+    # bootstrap
+    if install_bootstrap_script_type && install_bootstrap_script_type=='shell'
+      script = settings['install']['bootstrap']['script'] || '/opt/bootstrap/bootstrap.sh'
+
+      # bootstsrap with shell script
+      run_bootsrap_shell_script_in_container(settings, script)
     end
 
 
@@ -203,6 +212,14 @@ class Manager
     # setup
     setup_container_after_start(settings)
   end
+
+
+  def self.run_bootsrap_shell_script_in_container(settings, script_path)
+    # exec
+    cmd %Q(docker exec #{settings.container_name} #{script_path} )
+  end
+
+
 
   def self.setup_container_after_start(settings)
     # second network
