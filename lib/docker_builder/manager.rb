@@ -153,7 +153,7 @@ class Manager
 
     # provision after start
     install_node_script_type = (settings['install']['node']['script_type'] rescue nil)
-    install_bootstrap_script_type = (settings['install']['bootstrap']['script_type'] rescue nil)
+    install_bootstrap_script = (settings['install']['bootstrap']['script'] rescue nil)
 
     if install_node_script_type && install_node_script_type=='chef_recipe'
       # run container and provision with chef
@@ -179,11 +179,11 @@ class Manager
     end
 
     # bootstrap
-    if install_bootstrap_script_type && install_bootstrap_script_type=='shell'
-      script = settings['install']['bootstrap']['script'] || '/opt/bootstrap/bootstrap.sh'
+    if install_bootstrap_script
+      #script = settings['install']['bootstrap']['script'] || '/opt/bootstrap/bootstrap.sh'
 
       # bootstsrap with shell script
-      run_bootsrap_shell_script_in_container(settings, script)
+      run_bootsrap_shell_script_in_container(settings, install_bootstrap_script)
     end
 
 
