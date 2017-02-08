@@ -148,10 +148,70 @@ class Manager
 
 
     # start
-    start_container(settings)
+    start_container(name, settings)
 
+
+
+
+    true
+  end
+
+  def self.create_container(settings)
+    #cmd %Q(docker run -d --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
+
+    # create
+    cmd %Q(docker create --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
+
+    # second network
+    network2 = settings['docker']['network_secondary']
+    if network2
+      ip = network2['ip']
+      s_ip = "--ip #{ip}" if ip
+      cmd %Q(docker network connect #{s_ip}  #{network2['net']} #{settings.container_name})
+    end
+  end
+
+  def self.start_container(name, settings)
+    # start
+    cmd %Q(docker start #{settings.container_name})
+
+    # setup
+    setup_container_after_start(settings)
 
     # provision after start
+    run_provision_after_start(settings)
+  end
+
+
+  def self.setup_container_after_start(settings)
+    # second network
+    network2 = settings['docker']['network_secondary']
+
+    # fixes
+    if network2
+      gateway = network2['gateway']
+
+      if gateway
+        puts "setup network gateway"
+
+        # fix default gateway
+        cmd %Q(docker exec #{settings.container_name} ip route change default via #{gateway} dev eth1)
+      end
+
+    end
+
+    # fix hosts
+    container_hosts = settings['docker']['hosts'] || []
+    container_hosts.each do |r|
+      #cmd %Q(docker exec #{settings.container_name} bash -c 'echo "#{r[0]} #{r[1]}" >>  /etc/hosts')
+      cmd %Q(docker exec #{settings.container_name} sh -c 'echo "#{r[0]} #{r[1]}" >>  /etc/hosts')
+    end
+  end
+
+
+
+  def self.run_provision_after_start(settings)
+
     install_node_script_type = (settings['install']['node']['script_type'] rescue nil)
     install_bootstrap_script = (settings['install']['bootstrap']['script'] rescue nil)
 
@@ -190,29 +250,6 @@ class Manager
     true
   end
 
-  def self.create_container(settings)
-    #cmd %Q(docker run -d --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
-
-    # create
-    cmd %Q(docker create --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
-
-    # second network
-    network2 = settings['docker']['network_secondary']
-    if network2
-      ip = network2['ip']
-      s_ip = "--ip #{ip}" if ip
-      cmd %Q(docker network connect #{s_ip}  #{network2['net']} #{settings.container_name})
-    end
-  end
-
-  def self.start_container(settings)
-    # start
-    cmd %Q(docker start #{settings.container_name})
-
-    # setup
-    setup_container_after_start(settings)
-  end
-
 
   def self.run_bootsrap_shell_script_in_container(settings, script_path)
     # exec
@@ -220,29 +257,6 @@ class Manager
   end
 
 
-
-  def self.setup_container_after_start(settings)
-    # second network
-    network2 = settings['docker']['network_secondary']
-
-    # fixes
-    if network2
-      gateway = network2['gateway']
-
-      if gateway
-        # fix default gateway
-        cmd %Q(docker exec #{settings.container_name} ip route change default via #{gateway} dev eth1)
-      end
-
-    end
-
-    # fix hosts
-    container_hosts = settings['docker']['hosts'] || []
-    container_hosts.each do |r|
-      #cmd %Q(docker exec #{settings.container_name} bash -c 'echo "#{r[0]} #{r[1]}" >>  /etc/hosts')
-      cmd %Q(docker exec #{settings.container_name} sh -c 'echo "#{r[0]} #{r[1]}" >>  /etc/hosts')
-    end
-  end
 
 
   ### systemd service

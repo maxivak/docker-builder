@@ -217,6 +217,61 @@ class CLI < Thor
   end
 
 
+  ##
+  # [start]
+  #
+  #
+  desc 'start', 'Start Docker container'
+
+  long_desc <<-EOS.gsub(/^ +/, '')
+  Start Docker container.
+  EOS
+
+  method_option :server,
+                :aliases  => ['-s', '--server'],
+                :required => false,
+                :type     => :string,
+                :desc     => "Server name"
+
+  method_option :root_path,
+                :aliases  => '-r',
+                :type     => :string,
+                :default  => '',
+                :desc     => 'Root path to base all relative path on.'
+
+  method_option :config_file,
+                :aliases  => '-c',
+                :type     => :string,
+                :default  => 'config.rb',
+                :desc     => 'Path to your config.rb file.'
+
+  def start
+    puts "starting..."
+
+    opts = options
+
+    warnings = false
+    errors = false
+    begin
+      Config.load(options)
+
+      Config.servers.each do |name, opts|
+        server_settings = Settings.load_settings_for_server(name)
+
+        Manager.start_container(name, server_settings)
+      end
+
+    rescue Exception => err
+      puts "exception: #{err.inspect}"
+      raise err
+      exit(3)
+    end
+
+    exit(errors ? 2 : 1) if errors || warnings
+
+  end
+
+
 
   ##
   # [destroy]
