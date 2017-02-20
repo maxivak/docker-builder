@@ -184,6 +184,56 @@ http://localhost:8080
 
 
 
+# Install Docker container. Overview
+
+Process:
+* Create container - docker create
+* setup network and other settings for container
+
+* run provision to setup host machine. Script is running on the host machine.
+```
+{   
+'install'=>
+    { 
+        'host'=> {type: 'ruby', ..} 
+    }
+    ...
+}
+```
+
+* run provision to setup not running container. Run script which can copy/change files in container.
+```
+{   
+'install'=>
+    { 
+        'setup'=> {type: 'ruby'} 
+    }
+    ...
+}
+```
+* run container with `docker run`. Specify env variables, hostname and other options
+* first provision of container - bootstrap script. Run script from inside running container only once. 
+Script should be located inside container.
+```
+{   
+'install'=>
+    { 
+        'bootstrap'=> {type: 'chef'} 
+    }
+```
+* provision to init container. Run script all time after container starts. Script should be located inside container.
+```
+{   
+'install'=>
+    { 
+        'init'=> {type: 'chef'} 
+    }
+```
+
+* Use lock file to make sure the container does not start until the provision is finished.
+
+
+
 
 
 # Basic usage
@@ -480,6 +530,18 @@ it will NOT build a new Docker image.
 
 
 
+# Start Docker container
+
+docker-builder start -s server_name
+
+it starts docker container which was previously created.
+
+Process:
+* Start docker container container with `docker start ..`
+* Provision container
+
+
+
 # Other tools
 
 * packer - https://github.com/mitchellh/packer
@@ -584,3 +646,28 @@ Process:
 * docker start 
 * when container starts it runs /etc/boostrap which
     * runs chef-client to provision server first time
+
+
+
+## Bootstrap with shell script
+
+* Dockerfile
+
+* include script /opt/bootstrap/bootstrap.sh in container
+```
+ADD scripts/bootstrap.sh /opt/bootstrap/
+
+RUN chmod +x /opt/bootstrap/bootstrap.sh
+
+```
+
+* config
+
+```
+'install' => {
+    "bootstrap" => {  'script_type' => 'shell',     'script' => '/opt/bootstrap/bootstrap.sh',  },
+},
+
+
+```
+
