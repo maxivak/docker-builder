@@ -163,7 +163,7 @@ class Manager
     cmd %Q(docker create --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
 
     # networks
-    networks= settings['docker']['networks']
+    networks = settings['docker'].fetch('network', {}).fetch('networks', [])
     if networks
       networks.each do |net|
         ip = net['ip']
@@ -187,21 +187,20 @@ class Manager
 
 
   def self.setup_container_after_start(settings)
-    # second network
-    network2 = settings['docker']['network_secondary']
 
-    # fixes
-    if network2
-      gateway = network2['gateway']
+    # default gateway
+    network= settings['docker']['network']
+    if network
+      gateway = network['default_gateway']
 
       if gateway
-        puts "setup network gateway"
-
         # fix default gateway
-        cmd %Q(docker exec #{settings.container_name} ip route change default via #{gateway} dev eth1)
+        #cmd %Q(docker exec #{settings.container_name} ip route change default via #{gateway} dev eth1)
+        cmd %Q(docker exec #{settings.container_name} ip route change default via #{gateway})
       end
-
     end
+
+
 
     # fix hosts
     container_hosts = settings['docker']['hosts'] || []
