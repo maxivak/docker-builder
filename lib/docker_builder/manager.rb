@@ -168,6 +168,7 @@ class Manager
       networks.each do |net|
         ip = net['ip']
         s_ip = "--ip #{ip}" if ip
+        #puts %Q(docker network connect #{s_ip}  #{net['net']} #{settings.container_name})
         cmd %Q(docker network connect #{s_ip}  #{net['net']} #{settings.container_name})
       end
     end
