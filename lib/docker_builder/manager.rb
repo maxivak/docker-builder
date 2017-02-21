@@ -162,12 +162,14 @@ class Manager
     # create
     cmd %Q(docker create --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
 
-    # second network
-    network2 = settings['docker']['network_secondary']
-    if network2
-      ip = network2['ip']
-      s_ip = "--ip #{ip}" if ip
-      cmd %Q(docker network connect #{s_ip}  #{network2['net']} #{settings.container_name})
+    # networks
+    networks= settings['docker']['networks']
+    if networks
+      networks.each do |net|
+        ip = net['ip']
+        s_ip = "--ip #{ip}" if ip
+        cmd %Q(docker network connect #{s_ip}  #{net['net']} #{settings.container_name})
+      end
     end
   end
 
