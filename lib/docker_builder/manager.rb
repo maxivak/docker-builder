@@ -186,12 +186,8 @@ class Manager
   end
 
   def self.create_container(settings)
-    #cmd %Q(docker run -d --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
-
     # create
     cmd %Q(docker create --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
-
-
   end
 
 
@@ -278,7 +274,19 @@ class Manager
 
 
   def self.run_provision_after_start(settings)
+    # run bootstrap provision scripts
+    bootstrap_scripts = (settings['provision']['bootstrap'] rescue [])
+    if bootstrap_scripts
+      bootstrap_scripts.each do |script|
+        _run_bootstrap_script(settings, script)
+      end
+    end
 
+
+=begin
+# commented - 2017-02-22
+
+    #
     install_node_script_type = (settings['install']['node']['script_type'] rescue nil)
     install_bootstrap_script = (settings['install']['bootstrap']['script'] rescue nil)
 
@@ -312,9 +320,25 @@ class Manager
       # bootstsrap with shell script
       run_bootstrap_shell_script_in_container(settings, install_bootstrap_script)
     end
+=end
+
 
 
     true
+  end
+
+  def self._run_bootstrap_script(settings, script)
+    if script['type']=='shell' && script['run_from']=='host'
+      return _run_bootstrap_script_shell_from_host(settings, script)
+    end
+
+    return nil
+  end
+
+
+  def self._run_bootstrap_script_shell_from_host(settings, script)
+    cmd %Q(cd #{settings.dir_server_root} && #{script['script']} )
+
   end
 
 
@@ -352,16 +376,14 @@ class Manager
 
   def self._run_setup_script(settings, script)
     if script['type']=='shell'
-      return _run_setup_script_shell(settings, script)
+      return _run_setup_script_shell_from_host(settings, script)
     end
 
     return nil
   end
 
-  def self._run_setup_script_shell(settings, script)
-    #
+  def self._run_setup_script_shell_from_host(settings, script)
     cmd %Q(cd #{settings.dir_server_root} && #{script['script']} )
-
   end
 
 
