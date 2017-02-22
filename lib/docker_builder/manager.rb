@@ -232,10 +232,10 @@ class Manager
 
 
   def self.wait_until_running(container_name)
-    retries = 20
+    retries = 10
     until system("docker exec #{container_name} true") || retries < 0
-      sleep 0.5
-      retries == retries - 1
+      sleep 1
+      retries = retries - 1
     end
 
     assert_container_running(container_name)
