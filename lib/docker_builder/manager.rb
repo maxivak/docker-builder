@@ -149,19 +149,25 @@ class Manager
   def self._run_container(settings)
     puts "run container ..."
 
+    # generate config
+    save_config_json(settings)
 
     # create
     create_container(settings)
 
     setup_network(settings)
 
+
     ### BEFORE START
 
     # run setup provision scripts
     setup_scripts = (settings['provision']['setup'] rescue [])
-    setup_scripts.each do |script|
-      _run_setup_script(settings, script)
+    if setup_scripts
+      setup_scripts.each do |script|
+        _run_setup_script(settings, script)
+      end
     end
+
 
     # ??? TODO: remove it ?
     # run some provision scripts - for chef
@@ -230,9 +236,9 @@ class Manager
 
 
   def self.wait_until_running(container_name)
-    retries = 30
-    until system("docker exec container_name true") || retries < 0
-      sleep 0.1
+    retries = 20
+    until system("docker exec #{container_name} true") || retries < 0
+      sleep 0.5
       retries == retries - 1
     end
 
@@ -353,9 +359,6 @@ class Manager
   end
 
   def self._run_setup_script_shell(settings, script)
-    # generate config
-    save_config_json(settings)
-
     #
     cmd %Q(cd #{settings.dir_server_root} && #{script['script']} )
 
@@ -578,5 +581,14 @@ class Manager
     cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_node_json} )
     cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_client_json} )
   end
+
+
+  ### common helpers
+  def self.assert(expression, string = "Assert failed")
+    unless expression
+      throw Exception.new string
+    end
+  end
+
 end
 end
