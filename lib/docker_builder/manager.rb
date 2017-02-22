@@ -13,6 +13,19 @@ class Manager
   end
 
 
+  def self.save_config_json(settings)
+    require 'json'
+    filename = settings.filename_config_json
+    FileUtils.mkdir_p(File.dirname(filename))
+    File.open(filename,"w+") do |f|
+      f.write(settings.all_attributes.to_json)
+    end
+
+    #puts "f==#{filename}"
+
+    true
+  end
+
   ###
   def self.build_image(server_name, settings=nil)
     puts "building image for #{server_name}..."
@@ -136,10 +149,23 @@ class Manager
   def self._run_container(settings)
     puts "run container ..."
 
-    bootstrap_type = (settings['install']['bootstrap']['type'] rescue nil)
 
-    #
+    # create
     create_container(settings)
+
+    setup_network(settings)
+
+    ### BEFORE START
+
+    # run setup provision scripts
+    setup_scripts = (settings['provision']['setup'] rescue [])
+    setup_scripts.each do |script|
+      _run_setup_script(settings, script)
+    end
+
+    # ??? TODO: remove it ?
+    # run some provision scripts - for chef
+    bootstrap_type = (settings['install']['bootstrap']['type'] rescue nil)
 
     # before start
     if bootstrap_type && bootstrap_type=='chef'
@@ -147,11 +173,8 @@ class Manager
     end
 
 
-    # start
+    ### START && run provision after start
     start_container(name, settings)
-
-
-
 
     true
   end
@@ -162,21 +185,41 @@ class Manager
     # create
     cmd %Q(docker create --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
 
+
+  end
+
+
+  def self.setup_network(settings)
+    container_name = settings.container_name
+
     # networks
     networks = settings['docker'].fetch('network', {}).fetch('networks', [])
     if networks
       networks.each do |net|
+        next if net['action']=='remove'
+
         ip = net['ip']
         s_ip = "--ip #{ip}" if ip
         #puts %Q(docker network connect #{s_ip}  #{net['net']} #{settings.container_name})
         cmd %Q(docker network connect #{s_ip}  #{net['net']} #{settings.container_name})
       end
+
+      # remove
+      networks.each do |net|
+        next unless net['action']=='remove'
+        cmd %Q(docker network disconnect #{net['net']} #{settings.container_name})
+      end
     end
   end
+
+
 
   def self.start_container(name, settings)
     # start
     cmd %Q(docker start #{settings.container_name})
+
+    # wait
+    wait_until_running(settings.container_name)
 
     # setup
     setup_container_after_start(settings)
@@ -186,10 +229,26 @@ class Manager
   end
 
 
+  def self.wait_until_running(container_name)
+    retries = 30
+    until system("docker exec container_name true") || retries < 0
+      sleep 0.1
+      retries == retries - 1
+    end
+
+    assert_container_running(container_name)
+  end
+
+  def self.assert_container_running(container_name)
+    res = system("docker exec #{container_name} true")
+    assert res, "Container #{container_name} is not running"
+  end
+
   def self.setup_container_after_start(settings)
 
     # default gateway
-    network= settings['docker']['network']
+=begin
+    network = settings['docker']['network']
     if network
       gateway = network['default_gateway']
 
@@ -199,7 +258,7 @@ class Manager
         cmd %Q(docker exec #{settings.container_name} ip route change default via #{gateway})
       end
     end
-
+=end
 
 
     # fix hosts
@@ -245,7 +304,7 @@ class Manager
       #script = settings['install']['bootstrap']['script'] || '/opt/bootstrap/bootstrap.sh'
 
       # bootstsrap with shell script
-      run_bootsrap_shell_script_in_container(settings, install_bootstrap_script)
+      run_bootstrap_shell_script_in_container(settings, install_bootstrap_script)
     end
 
 
@@ -253,7 +312,7 @@ class Manager
   end
 
 
-  def self.run_bootsrap_shell_script_in_container(settings, script_path)
+  def self.run_bootstrap_shell_script_in_container(settings, script_path)
     # exec
     cmd %Q(docker exec #{settings.container_name} #{script_path} )
   end
@@ -284,6 +343,24 @@ class Manager
 
 
   ### provision
+
+  def self._run_setup_script(settings, script)
+    if script['type']=='shell'
+      return _run_setup_script_shell(settings, script)
+    end
+
+    return nil
+  end
+
+  def self._run_setup_script_shell(settings, script)
+    # generate config
+    save_config_json(settings)
+
+    #
+    cmd %Q(cd #{settings.dir_server_root} && #{script['script']} )
+
+  end
+
 
   def self._bootstrap_container_prepare(settings)
     require_relative '../../lib/docker_builder/provisioner/provisioner_chef'
