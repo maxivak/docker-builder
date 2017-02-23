@@ -54,7 +54,7 @@ module DockerBuilder
 
         res['builders'] = []
 
-        bi = settings.attributes['build']['base_image']
+        bi = settings.properties['build']['base_image']
         base_image_name = "#{bi['name']}:#{bi['tag']}"
         builder1 = {
             pull: false,
@@ -64,7 +64,7 @@ module DockerBuilder
         }
 
         # changes
-        entrypoint = settings.attributes['build']['entrypoint']
+        entrypoint = settings.properties['build']['entrypoint']
         if entrypoint
           builder1['changes'] ||= []
           builder1['changes'] << "ENTRYPOINT #{entrypoint}"
@@ -82,7 +82,7 @@ module DockerBuilder
                 type: "chef-solo",
                 prevent_sudo: true,
                 cookbook_paths: cookbook_paths,
-                json: settings.attributes['attributes'],
+                json: settings.properties['attributes'],
                 run_list: ["recipe[#{settings.name}::#{recipe_name}]"]
           },
         ]
