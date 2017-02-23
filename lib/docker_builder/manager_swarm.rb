@@ -23,7 +23,7 @@ module DockerBuilder
       create_volumes_dirs(settings)
 
       # create service
-      docker_opts = settings.attributes['docker']
+      docker_opts = settings.properties['docker']
 
       run_opts = []
       run_opts << "--network #{docker_opts['swarm_network']}" if docker_opts['swarm_network']

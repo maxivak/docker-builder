@@ -221,7 +221,8 @@ Script should be located inside container.
         'bootstrap'=> {type: 'chef'} 
     }
 ```
-* provision to init container. Run script all time after container starts. Script should be located inside container.
+
+* provision to init container. Run script every time after container starts. Script should be located inside container.
 ```
 {   
 'install'=>
@@ -341,6 +342,27 @@ access container:
 docker exec -ti container_name /bin/bash
 ```
 
+
+
+
+# Provision
+
+## Run provision after start
+
+### Run provision from host machine
+
+Run from outside container
+
+```
+'provision' => {
+    "bootstrap" => [
+        {'type' => 'shell', 'run_from'=>'host', 'script'=>'name=myserver ruby myprovision1.rb'     }
+    ]
+}
+    
+```
+
+it will run script `name=myserver ruby myprovision1.rb` from the host machine.
 
 
 ## Development
@@ -671,3 +693,92 @@ RUN chmod +x /opt/bootstrap/bootstrap.sh
 
 ```
 
+
+
+# Run docker container
+
+## Network
+
+* config
+```
+'docker'=> {
+..
+'network': {
+    default_gateway: '192.168.1.1',
+   networks: {
+      {net: 'bridge'}, # default docker bridge
+      {net: 'mybridge1', ip: '10.1.0.12'},
+      {net: 'my_overlay1', ip: '51.1.0.15'},
+   }
+   
+}
+
+}
+```
+
+
+
+## remove default network
+
+remove default network 'bridge'
+
+```
+'docker'=> {
+..
+'network': {
+   networks: {
+      {net: 'bridge', action: 'remove'}, # remove default docker bridge
+      {net: 'mybridge1', ip: '10.1.0.12'},
+      {net: 'my_overlay1', ip: '51.1.0.15'},
+   }
+}
+
+}
+```
+
+## multiple networks
+
+```
+'docker'=> {
+..
+'network': {
+   networks: {
+      {net: 'mybridge1', ip: '10.1.0.12'},
+      {net: 'my_overlay1', ip: '51.1.0.15'},
+   }
+   
+}
+
+}
+```
+
+* example:
+
+* create networks
+```
+# bridge
+
+# macvlan
+```
+
+see docker networks:
+```
+docker network ls
+```
+
+
+in this example container will be connected to three networks:
+     * docker default bridge named 'bridge'
+     * custom docker network named 'mybridge1' with ip='10.1.0.12'
+     * custom docker network named 'my_overlay1'
+     
+
+
+
+* check
+```
+ip route
+
+...
+
+```

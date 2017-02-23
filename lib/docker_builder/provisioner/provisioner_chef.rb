@@ -53,7 +53,7 @@ module DockerBuilder
       def build_config
         res = {}
 
-        attr = settings.attributes['attributes']
+        attr = settings.properties['attributes']
         res = attr
 
         #res = settings.all_attributes

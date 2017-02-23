@@ -30,7 +30,7 @@ class Manager
   def self.build_image(server_name, settings=nil)
     puts "building image for #{server_name}..."
     #puts "settings: #{settings}"
-    #puts "debug: #{settings['attributes']}"
+    #puts "debug: #{settings['properties']}"
 
     #settings = load_settings(server_name)
 
@@ -169,15 +169,6 @@ class Manager
     end
 
 
-    # ??? TODO: remove it ?
-    # run some provision scripts - for chef
-    bootstrap_type = (settings['install']['bootstrap']['type'] rescue nil)
-
-    # before start
-    if bootstrap_type && bootstrap_type=='chef'
-      _bootstrap_container_prepare(settings)
-    end
-
 
     ### START && run provision after start
     start_container(name, settings)
@@ -217,6 +208,11 @@ class Manager
 
 
   def self.start_container(name, settings)
+    # prepare before start
+    prepare_before_start(settings)
+
+
+
     # start
     cmd %Q(docker start #{settings.container_name})
 
@@ -245,6 +241,34 @@ class Manager
     res = system("docker exec #{container_name} true")
     assert res, "Container #{container_name} is not running"
   end
+
+  def self.prepare_before_start(settings)
+    puts "prepare_before_start"
+
+    #
+    bootstrap_scripts = (settings['provision']['bootstrap'] rescue [])
+
+    # before start
+    if bootstrap_scripts
+      bootstrap_scripts.each do |script|
+        if script['type']=='chef'
+          _prepare_provision_before_start_chef(settings, script)
+        end
+      end
+    end
+
+  end
+
+  def self._prepare_provision_before_start_chef(settings, script)
+    puts "_prepare_provision_before_start_chef"
+
+    require_relative '../../lib/docker_builder/provisioner/provisioner_chef'
+
+    provisioner = DockerBuilder::Provisioner::ProvisionerChef.new(settings)
+    provisioner.copy_config_file
+
+  end
+
 
   def self.setup_container_after_start(settings)
 
@@ -387,13 +411,7 @@ class Manager
   end
 
 
-  def self._bootstrap_container_prepare(settings)
-    require_relative '../../lib/docker_builder/provisioner/provisioner_chef'
 
-    provisioner = DockerBuilder::Provisioner::ProvisionerChef.new(settings)
-    provisioner.copy_config_file
-
-  end
 
   def self._provision_container_chef_recipe(settings)
     puts "provisioning container #{settings.container_name}"
