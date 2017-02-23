@@ -1,20 +1,20 @@
 module DockerBuilder
 
 class ServerSettings
-  attr_accessor :attributes
+  attr_accessor :properties
 
   def get_binding
     return binding()
   end
 
-  def attributes
-    @attributes ||= {}
-    @attributes
+  def properties
+    @properties ||= {}
+    @properties
   end
 
 
   def all_attributes
-    res = attributes
+    res = properties
 
     res['base'] = {
         'image_name'=> image_name,
@@ -33,7 +33,7 @@ class ServerSettings
 
   #
   def node
-    res = attributes['attributes'] || {}
+    res = properties['attributes'] || {}
 
     res['name'] = name
     res['container_name'] = container_name
@@ -41,61 +41,99 @@ class ServerSettings
     res
   end
 
-  #
+  ### DSL
   def set(name, v)
-    attributes[name] = v
+    properties[name] = v
   end
 
   def add(name, v)
-    attributes[name] = {} if attributes[name].nil?
+    properties[name] = {} if properties[name].nil?
 
-    attributes[name].merge!(v)
+    properties[name].merge!(v)
   end
+
+
+  def add_config(a)
+    # merge
+    build(a['build']) if a['build']
+    provision(a['provision']) if a['provision']
+    docker(a['docker']) if a['docker']
+    attributes(a['attributes']) if a['attributes']
+
+
+  end
+
+  def build(v)
+    properties['build'] = v
+  end
+
+  def provision(v)
+    properties['provision'] = v
+  end
+
+  def docker(a)
+    # merge
+    properties['docker'] ||= {}
+
+    a.each do |k,v|
+      properties['docker'][k] = v
+    end
+  end
+
+  def attributes(a)
+    # merge
+    properties['attributes'] ||= {}
+
+    a.each do |k,v|
+      properties['attributes'][k] = v
+    end
+  end
+
 
   ###
   def prefix
-    attributes['common']['prefix']
+    properties['common']['prefix']
   end
 
   def container_prefix
-    "#{attributes['common']['prefix']}#{attributes['common']['container_prefix']}"
+    "#{properties['common']['prefix']}#{properties['common']['container_prefix']}"
   end
 
   def image_prefix
-    "#{attributes['common']['prefix']}#{attributes['common']['image_prefix']}"
+    "#{properties['common']['prefix']}#{properties['common']['image_prefix']}"
   end
 
   def service_prefix
-    "#{attributes['common']['prefix']}#{attributes['common']['service_prefix']}"
+    "#{properties['common']['prefix']}#{properties['common']['service_prefix']}"
   end
 
 
   ###
 
   def name
-    attributes['name']
+    properties['name']
   end
 
 
 
   def image_name
     if !need_build?
-      bi = attributes['build']['base_image']
+      bi = properties['build']['base_image']
       return "#{bi['name']}:#{bi['tag']}"
     end
 
     #
-    s = attributes['name']
+    s = properties['name']
 
-    if attributes['build']['image_name']
-      s = "#{attributes['build']['image_name']}"
+    if properties['build']['image_name']
+      s = "#{properties['build']['image_name']}"
     end
 
     "#{image_prefix}#{s}"
   end
 
   def need_build?
-    build_type = attributes['build']['build_type']
+    build_type = properties['build']['build_type']
     return false if build_type=='' || build_type=='none'
 
 
@@ -103,7 +141,7 @@ class ServerSettings
   end
 
   def container_name(name=nil)
-    name ||= attributes['name']
+    name ||= properties['name']
     s = name
 
     "#{container_prefix}#{s}"
@@ -122,7 +160,7 @@ class ServerSettings
       res = "$PWD/servers/#{self.name}/#{s}"
 
     elsif v =~ /^\/\//
-      res = self.attributes['common']['dir_data']+(v.gsub /^\/\//, '')
+      res = self.properties['common']['dir_data']+(v.gsub /^\/\//, '')
     elsif v =~ /^\//
       res = v
     else
@@ -133,14 +171,14 @@ class ServerSettings
   end
 
   def dir_data
-    "#{attributes['common']['dir_data']}#{self.name}/"
+    "#{properties['common']['dir_data']}#{self.name}/"
   end
 
 
   ### docker swarm services
 
   def service_name(name=nil)
-    name ||= attributes['name']
+    name ||= properties['name']
     s = name
 
     "#{service_prefix}#{s}"
@@ -148,7 +186,7 @@ class ServerSettings
 
   ###
   def docker_volumes
-    a = attributes['docker']['volumes'] || []
+    a = properties['docker']['volumes'] || []
 
     # fix paths
     res = a.map do |r|
@@ -171,7 +209,7 @@ class ServerSettings
   ###
 
   def docker_volumes_from
-    a = attributes['docker']['volumes_from'] || []
+    a = properties['docker']['volumes_from'] || []
 
     # fix paths
     res = a.map do |r|
@@ -191,7 +229,7 @@ class ServerSettings
 
   ###
   def docker_ports
-    a = attributes['docker']['ports'] || []
+    a = properties['docker']['ports'] || []
     a
   end
 
@@ -205,7 +243,7 @@ class ServerSettings
 
   ###
   def docker_links
-    a = attributes['docker']['links'] || []
+    a = properties['docker']['links'] || []
 
     # fix
     res = a.map do |r|
@@ -226,7 +264,7 @@ class ServerSettings
   ###
 
   def run_env_variables
-    a = attributes['docker']['run_env'] || []
+    a = properties['docker']['run_env'] || []
 
     a
   end
@@ -239,21 +277,21 @@ class ServerSettings
   ###
 
   def run_extra_options_string
-    s = attributes['docker']['run_extra_options'] || ''
+    s = properties['docker']['run_extra_options'] || ''
     s
   end
 
 
   ###
   def is_swarm_mode?
-    v = attributes["docker"]["swarm_mode"]
+    v = properties["docker"]["swarm_mode"]
     return false if v.nil?
     return v
   end
 
   ###
   def [](key)
-    attributes[key]
+    properties[key]
   end
 
 
@@ -302,7 +340,7 @@ class Settings
 
     # set from main Config
     Config.servers[name].each do |k,v|
-      settings.attributes[k]=v
+      settings.properties[k]=v
     end
 
 
@@ -321,10 +359,10 @@ class Settings
     eval(t, settings.get_binding)
 
     #
-    settings.attributes['name'] ||= name
+    settings.properties['name'] ||= name
 
     # from common config
-    settings.attributes['common'] = Config.options[:common]
+    settings.properties['common'] = Config.options[:common]
 
     settings
   end
