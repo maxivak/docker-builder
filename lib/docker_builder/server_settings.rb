@@ -14,7 +14,7 @@ class ServerSettings
 
 
   def all_attributes
-    res = properties
+    res = properties.clone
 
     res['base'] = {
         'image_name'=> image_name,
@@ -157,7 +157,8 @@ class ServerSettings
     if v =~ /^\./
       s = v.gsub /^\.\//, ''
 
-      res = "$PWD/servers/#{self.name}/#{s}"
+      #res = "$PWD/servers/#{self.name}/#{s}"
+      res = File.expand_path(s, dir_server_root)
 
     elsif v =~ /^\/\//
       res = self.properties['common']['dir_data']+(v.gsub /^\/\//, '')
@@ -188,12 +189,16 @@ class ServerSettings
   def docker_volumes
     a = properties['docker']['volumes'] || []
 
+    #puts "volumes a=#{a}"
+
     # fix paths
     res = a.map do |r|
       path_local = volume_path_local(r[0])
 
       [path_local, r[1]]
     end
+
+    #puts "volumes: #{res}"
 
     res
   end
