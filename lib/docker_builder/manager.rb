@@ -21,8 +21,6 @@ class Manager
       f.write(settings.all_attributes.to_json)
     end
 
-    #puts "f==#{filename}"
-
     true
   end
 
