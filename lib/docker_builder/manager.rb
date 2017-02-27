@@ -292,7 +292,6 @@ class Manager
   def self.setup_container_after_start(settings)
 
     # default gateway
-
     network = settings['docker']['network']
     if network
       gateway = network['default_gateway']
@@ -371,7 +370,6 @@ class Manager
   end
 
   def self._run_bootstrap_script(settings, script)
-    puts "run bs script #{script}"
     if script['type']=='shell' && script['run_from']=='host'
       return _run_bootstrap_script_shell_from_host(settings, script)
     end

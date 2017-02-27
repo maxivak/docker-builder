@@ -1,3 +1,3 @@
 module DockerBuilder
-  VERSION = "0.1.45"
+  VERSION = "0.1.48"
 end
