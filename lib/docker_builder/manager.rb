@@ -156,18 +156,6 @@ class Manager
     setup_network(settings)
 
 
-    ### BEFORE START
-
-    # run setup provision scripts
-    setup_scripts = (settings['provision']['setup'] rescue [])
-    if setup_scripts
-      setup_scripts.each do |script|
-        _run_setup_script(settings, script)
-      end
-    end
-
-
-
     ### START && run provision after start
     start_container(name, settings)
 
@@ -175,8 +163,20 @@ class Manager
   end
 
   def self.create_container(settings)
+    #puts "networks: #{settings['docker']['network']}"
     # create
-    cmd %Q(docker create --name #{settings.container_name} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
+    net_options = ""
+    networks = settings['docker'].fetch('network', {}).fetch('networks', [])
+    if networks && networks[0]
+      network = networks[0]
+      #puts "network=#{network}"
+      net_options << "--net #{network['net']} "
+      net_options << "--ip #{network['ip']} "  if network['ip']
+      net_options << "--mac-address #{network['mac_address']} "  if network['mac_address']
+    end
+
+
+    cmd %Q(docker create --name #{settings.container_name} #{net_options} #{settings.docker_ports_string} #{settings.docker_volumes_string} #{settings.docker_volumes_from_string} #{settings.docker_links_string}  #{settings.run_extra_options_string} #{settings.run_env_variables_string} #{settings.image_name} #{settings['docker']['command']} #{settings['docker']['run_options']})
   end
 
 
@@ -206,6 +206,17 @@ class Manager
 
 
   def self.start_container(name, settings)
+    ### BEFORE START
+
+    # run setup provision scripts
+    setup_scripts = (settings['provision']['setup'] rescue [])
+    if setup_scripts
+      setup_scripts.each do |script|
+        _run_setup_script(settings, script)
+      end
+    end
+
+
     # prepare before start
     prepare_before_start(settings)
 
@@ -243,7 +254,7 @@ class Manager
   def self.prepare_before_start(settings)
     puts "prepare_before_start"
 
-    #
+    # prepare for chef scripts
     bootstrap_scripts = (settings['provision']['bootstrap'] rescue [])
 
     # before start
@@ -271,7 +282,7 @@ class Manager
   def self.setup_container_after_start(settings)
 
     # default gateway
-=begin
+
     network = settings['docker']['network']
     if network
       gateway = network['default_gateway']
@@ -282,7 +293,7 @@ class Manager
         cmd %Q(docker exec #{settings.container_name} ip route change default via #{gateway})
       end
     end
-=end
+
 
 
     # fix hosts
@@ -350,6 +361,7 @@ class Manager
   end
 
   def self._run_bootstrap_script(settings, script)
+    puts "run bs script #{script}"
     if script['type']=='shell' && script['run_from']=='host'
       return _run_bootstrap_script_shell_from_host(settings, script)
     end
