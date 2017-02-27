@@ -186,9 +186,16 @@ class Manager
     # networks
     networks = settings['docker'].fetch('network', {}).fetch('networks', [])
     if networks
+      ind = 0
       networks.each do |net|
         next if net['action']=='remove'
 
+        # skip first network
+        next if ind==0
+
+        ind = ind + 1
+
+        # connect
         ip = net['ip']
         s_ip = "--ip #{ip}" if ip
         #puts %Q(docker network connect #{s_ip}  #{net['net']} #{settings.container_name})
