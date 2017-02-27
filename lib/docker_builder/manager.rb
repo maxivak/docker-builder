@@ -188,12 +188,15 @@ class Manager
     if networks
       ind = 0
       networks.each do |net|
+        ind = ind + 1
+
+        #
         next if net['action']=='remove'
 
         # skip first network
-        next if ind==0
+        next if ind==1
 
-        ind = ind + 1
+
 
         # connect
         ip = net['ip']
