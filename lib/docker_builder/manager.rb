@@ -316,6 +316,8 @@ class Manager
 
 
   def self.run_provision_after_start(settings)
+    puts "run_provision_after_start"
+
     # run bootstrap provision scripts
     bootstrap_scripts = (settings['provision']['bootstrap'] rescue [])
     if bootstrap_scripts
@@ -370,8 +372,12 @@ class Manager
   end
 
   def self._run_bootstrap_script(settings, script)
+    puts "run BS script #{script}"
+
     if script['type']=='shell' && script['run_from']=='host'
       return _run_bootstrap_script_shell_from_host(settings, script)
+    elsif script['type']=='shell' && (script['run_from'].nil? || script['run_from']=='')
+      _run_bootstrap_script_shell_in_container(settings, script)
     end
 
     return nil
@@ -384,7 +390,8 @@ class Manager
   end
 
 
-  def self.run_bootstrap_shell_script_in_container(settings, script_path)
+  def self._run_bootstrap_script_shell_in_container(settings, script)
+    script_path = script['script']
     # exec
     cmd %Q(docker exec #{settings.container_name} #{script_path} )
   end
