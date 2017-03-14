@@ -250,20 +250,20 @@ class ServerSettings
   def docker_links
     a = properties['docker']['links'] || []
 
-    # fix
-    res = a.map do |r|
-      ["#{container_prefix}#{r[0]}", r[1]]
-    end
-
-    res
+    a
   end
 
   def docker_links_string
-    docker_links.map{|r| "--link #{r[0]}:#{r[1]}"}.join(' ')
+    docker_links_array.map{|s| "--link #{s}"}.join(' ')
   end
 
   def docker_links_array
-    docker_links.map{|d| "#{d[0]}:#{d[1]}"}
+    docker_links.map{|d| docker_link_build(d)}
+  end
+
+  def docker_link_build(r)
+    # fix
+    "#{container_prefix}#{r[0]}:#{r[1]}"
   end
 
   ###
