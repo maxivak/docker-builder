@@ -92,5 +92,12 @@ module DockerBuilder
       #cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_node_json} )
       #cmd %Q(cd #{Config.root_path} && rm -f #{settings.filename_chef_client_json} )
     end
+
+
+    ###
+    def self.cmd(s)
+      Command.cmd(s)
+    end
+
   end
 end
