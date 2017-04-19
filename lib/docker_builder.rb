@@ -14,7 +14,10 @@ module DockerBuilder
     command
     cli
     server_settings
-    manager
+    manager_image
+    manager_container
     manager_swarm
+    provisioner/base
+    provisioner/chef
   }.each {|lib| require File.join(LIBRARY_PATH, lib) }
 end

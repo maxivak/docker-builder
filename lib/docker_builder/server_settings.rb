@@ -189,16 +189,12 @@ class ServerSettings
   def docker_volumes
     a = properties['docker']['volumes'] || []
 
-    #puts "volumes a=#{a}"
-
     # fix paths
     res = a.map do |r|
       path_local = volume_path_local(r[0])
 
       [path_local, r[1]]
     end
-
-    #puts "volumes: #{res}"
 
     res
   end
@@ -359,7 +355,6 @@ class Settings
 
     #
     f = file_settings_for_server(name)
-    #puts "loading server settings from #{f}"
     t = File.read(f) rescue ''
     eval(t, settings.get_binding)
 

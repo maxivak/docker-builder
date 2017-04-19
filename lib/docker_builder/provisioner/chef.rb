@@ -1,6 +1,6 @@
 module DockerBuilder
   module Provisioner
-    class ProvisionerChef
+    class Chef
 
       attr_accessor :server
 
@@ -60,6 +60,10 @@ module DockerBuilder
 
         res
       end
+
+
+      ### run recipes
+
 
     end
   end

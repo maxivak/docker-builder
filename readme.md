@@ -193,42 +193,52 @@ Process:
 * run provision to setup host machine. Script is running on the host machine.
 ```
 {   
-'install'=>
-    { 
-        'host'=> {type: 'ruby', ..} 
-    }
+'provision'=>{
+    'setup' => [
+        {type: 'host', ..}, 
+        ..
+    ]
     ...
 }
 ```
 
-* run provision to setup not running container. Run script which can copy/change files in container.
+* run provision to setup created (not running) container. 
+Run script to copy/update files in container.
+
 ```
 {   
-'install'=>
-    { 
-        'setup'=> {type: 'ruby'} 
-    }
+'provision'=>{
+   'setup'=> [
+        {type: 'ruby', <<script_options>>}, 
+        ..
+    ]
     ...
 }
 ```
+
 * run container with `docker run`. Specify env variables, hostname and other options
 * first provision of container - bootstrap script. Run script from inside running container only once. 
 Script should be located inside container.
 ```
 {   
-'install'=>
-    { 
-        'bootstrap'=> {type: 'chef'} 
-    }
+'provision'=>{
+   'bootstrap'=> [
+        {type: 'chef', ..},
+        ..
+    ]
+}
 ```
 
-* provision to init container. Run script every time after container starts. Script should be located inside container.
+* provision to initialize container. 
+Run script every time after container starts. Script should be located inside container.
 ```
 {   
-'install'=>
-    { 
-        'init'=> {type: 'chef'} 
-    }
+'provision'=>{
+    'init'=> [
+        {type: 'chef'},
+        ..
+    ]
+}
 ```
 
 * Use lock file to make sure the container does not start until the provision is finished.
@@ -650,28 +660,35 @@ my-test-redis
 
     
 
+# Provision
 
-# Bootstrap
+## Setup container
+
+### Setup container with shell script
+
+* run script from the host
+
+```
+'provision' => {
+    "setup" => [
+        {  'type' => 'shell',     'script' => 'scripts/mysetup.sh',  },
+     ]
+},
+```
+
+* it will run the script
+```
+scripts/mysetup.sh
+```
+
+## Bootstrap container
 
 * first provision of container
-
-
-## Provision with chef
-
-docker-builder up -s server_name
-
-Process:
-* docker create with docker options
-    * entrypoint: /etc/bootstrap
-* generate config with node attributes for chef and save it to temp/boostrap-__server__.json
-* copy config file to container to /opt/bootstrap/config.json
-* docker start 
-* when container starts it runs /etc/boostrap which
-    * runs chef-client to provision server first time
+* provision scripts run only once
 
 
 
-## Bootstrap with shell script
+### Bootstrap with shell script
 
 * Dockerfile
 
@@ -686,18 +703,34 @@ RUN chmod +x /opt/bootstrap/bootstrap.sh
 * config
 
 ```
-'install' => {
-    "bootstrap" => {  'script_type' => 'shell',     'script' => '/opt/bootstrap/bootstrap.sh',  },
+'provision' => {
+    "bootstrap" => [
+        {  'type' => 'shell',     'script' => '/opt/bootstrap/bootstrap.sh',  },
+     ]
 },
 
 
 ```
 
+## Provision with chef
+
+docker-builder up -s server_name
+
+Process:
+* docker create with docker options
+    * entrypoint: /etc/bootstrap
+* generate config with node attributes for chef and save it to temp/boostrap-__server__.json
+* copy config file to container to /opt/bootstrap/config.json
+* docker start 
+* when container starts it runs /etc/bootstrap which
+    * runs chef-client to provision server first time
 
 
-# Run docker container
 
-## Network
+
+
+
+# Network
 
 * config
 ```

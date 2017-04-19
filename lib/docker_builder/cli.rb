@@ -61,8 +61,8 @@ class CLI < Thor
         #puts "s: #{server_settings.inspect}"
         #exit
 
-        Manager.destroy_image(name, server_settings)
-        Manager.build_image(name, server_settings)
+        ManagerImage.destroy_image(name, server_settings)
+        ManagerImage.build_image(name, server_settings)
       end
 
 
@@ -138,7 +138,7 @@ class CLI < Thor
       Config.servers.each do |name, opts|
         server_settings = Settings.load_settings_for_server(name)
 
-        Manager.destroy_image(name, server_settings)
+        ManagerImage.destroy_image(name, server_settings)
       end
 
     rescue Exception => err
@@ -200,8 +200,8 @@ class CLI < Thor
           ManagerSwarm.destroy_service(name, server_settings)
           ManagerSwarm.create_service(name, server_settings)
         else
-          Manager.destroy_container(name, server_settings)
-          Manager.run_container(name, server_settings)
+          ManagerContainer.destroy_container(name, server_settings)
+          ManagerContainer.run_container(name, server_settings)
         end
 
       end
@@ -258,7 +258,7 @@ class CLI < Thor
       Config.servers.each do |name, opts|
         server_settings = Settings.load_settings_for_server(name)
 
-        Manager.start_container(name, server_settings)
+        ManagerContainer.start_container(name, server_settings)
       end
 
     rescue Exception => err
@@ -320,7 +320,7 @@ class CLI < Thor
         if server_settings.is_swarm_mode?
           ManagerSwarm.destroy_service(name, server_settings)
         else
-          Manager.destroy_container(name, server_settings)
+          ManagerContainer.destroy_container(name, server_settings)
         end
 
       end
@@ -382,7 +382,7 @@ class CLI < Thor
       Config.servers.each do |name, opts|
         server_settings = Settings.load_settings_for_server(name)
 
-        Manager.stop_container(name, server_settings)
+        ManagerContainer.stop_container(name, server_settings)
       end
 
     rescue Exception => err
@@ -442,7 +442,7 @@ class CLI < Thor
       Config.servers.each do |name, opts|
         server_settings = Settings.load_settings_for_server(name)
 
-        Manager.clear_cache(name, server_settings)
+        ManagerContainer.clear_cache(name, server_settings)
       end
 
     rescue Exception => err
