@@ -732,15 +732,37 @@ Process:
 
 # Network
 
-* config
+* Docker container can be connected to multiple networks. 
+Container has an IP in each network. 
+
+Docker networks can be created using docker command `docker network create`
+
+
+Docker-builder allows you to manage networks for your container.
+
+
+
+
+
+
+## multiple networks
+
+
+* connect to multiple networks and specify default gateway
+
+define IP in each network.
+
+it assumes that networks 'my_bridge1' and 'my_overlay1' exist.
+
+
 ```
 'docker'=> {
 ..
 'network': {
-    default_gateway: '192.168.1.1',
+   default_gateway: '192.168.1.1',
    networks: {
       {net: 'bridge'}, # default docker bridge
-      {net: 'mybridge1', ip: '10.1.0.12'},
+      {net: 'my_bridge1', ip: '10.1.0.12'},
       {net: 'my_overlay1', ip: '51.1.0.15'},
    }
    
@@ -749,11 +771,41 @@ Process:
 }
 ```
 
+in this example container will be connected to three networks:
+     * docker default bridge named 'bridge'
+     * custom docker network named 'my_bridge1' with ip='10.1.0.12'
+     * custom docker network named 'my_overlay1'
+     
+     
+
+create networks:
+```
+docker network create --driver bridge --subnet=51.1.0.0/16 --gateway=51.1.0.1  my_bridge1
+docker network create -d macvlan --subnet=10.1.0.0/16  --gateway=10.1.0.1 --ip-range=10.1.12.0/24 -o parent=eth0 my_overlay1
+```
+
+see docker networks:
+```
+docker network ls
+```
 
 
-## remove default network
+* check
+```
+docker exec -ti mycontainer bash
 
-remove default network 'bridge'
+ip route
+
+# sample output
+...
+
+```
+
+
+## remove default Docker bridge network 
+
+
+* Container will be connected to two networks and NOT connected to default Docker network 'bridge'
 
 ```
 'docker'=> {
@@ -767,53 +819,6 @@ remove default network 'bridge'
 }
 
 }
-```
-
-## multiple networks
-
-```
-'docker'=> {
-..
-'network': {
-   networks: {
-      {net: 'mybridge1', ip: '10.1.0.12'},
-      {net: 'my_overlay1', ip: '51.1.0.15'},
-   }
-   
-}
-
-}
-```
-
-* example:
-
-* create networks
-```
-# bridge
-
-# macvlan
-```
-
-see docker networks:
-```
-docker network ls
-```
-
-
-in this example container will be connected to three networks:
-     * docker default bridge named 'bridge'
-     * custom docker network named 'mybridge1' with ip='10.1.0.12'
-     * custom docker network named 'my_overlay1'
-     
-
-
-
-* check
-```
-ip route
-
-...
-
 ```
 
 
