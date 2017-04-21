@@ -181,8 +181,8 @@ class ServerSettings
       s = v.gsub /^\.\//, ''
 
       #res = "$PWD/servers/#{self.name}/#{s}"
-      #res = File.expand_path(s, dir_server_root)
-      res = File.expand_path(s, properties_common('root_path'))
+      res = File.expand_path(s, dir_server_root)
+      #res = File.expand_path(s, properties_common('root_path'))
 
     elsif v =~ /^\/\//
       res = dir_data_base+(v.gsub /^\/\//, '')

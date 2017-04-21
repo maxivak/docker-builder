@@ -63,8 +63,20 @@ module DockerBuilder
         #end
 
         # servers
+        #puts "ss = #{@options}"
+
         #load_servers(opts)
-        @servers = dsl._config_servers
+        if @options['server']
+          #puts "ONE sevrer"
+          srv_name = @options['server'] || @options[:server]
+          # one server
+          @servers = {srv_name => dsl._config_servers[srv_name]}
+        else
+          #puts "ALL sevrer"
+          # all servers
+          @servers = dsl._config_servers
+        end
+
 
         @servers.each do |name, sc|
           # from common config
