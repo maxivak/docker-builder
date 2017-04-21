@@ -46,46 +46,20 @@ class CLI < Thor
     warnings = false
     errors = false
 
-
-    servers = nil
     begin
       Config.load(options)
 
-      #puts "config servers: #{Config.inspect}"
-      #puts "config: #{Config.options.inspect}"
-      #exit
-
-      Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name)
+      Config.servers.each do |name, server_settings|
+        #server_settings = Settings.load_settings_for_server(name)
 
         #puts "s: #{server_settings.inspect}"
-        #exit
 
         ManagerImage.destroy_image(name, server_settings)
         ManagerImage.build_image(name, server_settings)
       end
 
 
-      #servers = options[:server].split(',').map(&:strip)
-      #models = triggers.map {|trigger|
-      #  Model.find_by_trigger(trigger)
-      #}.flatten.uniq
-
-      #raise Error, "No servers found " + "'#{ triggers.join(',') }'." if models.empty?
-
-      # Finalize Logger and begin real-time logging.
-      #Logger.start!
-
     rescue Exception => err
-      #Logger.error Error.wrap(err)
-      #unless Helpers.is_backup_error? err
-      #  Logger.error err.backtrace.join("\n")
-      #end
-
-      # Logger configuration will be ignored
-      # and messages will be output to the console only.
-      #Logger.abort!
-
       puts "exception: #{err.inspect}"
       raise err
       exit(3)
@@ -130,13 +104,11 @@ class CLI < Thor
     warnings = false
     errors = false
 
-    servers = nil
-
     begin
       Config.load(options)
 
-      Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name)
+      Config.servers.each do |name, server_settings|
+        #server_settings = Settings.load_settings_for_server(name)
 
         ManagerImage.destroy_image(name, server_settings)
       end
@@ -189,12 +161,11 @@ class CLI < Thor
     errors = false
 
 
-    servers = nil
     begin
       Config.load(options)
 
-      Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name)
+      Config.servers.each do |name, server_settings|
+        #server_settings = Settings.load_settings_for_server(name)
 
         if server_settings.is_swarm_mode?
           ManagerSwarm.destroy_service(name, server_settings)
@@ -255,8 +226,8 @@ class CLI < Thor
     begin
       Config.load(options)
 
-      Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name)
+      Config.servers.each do |name, server_settings|
+        #server_settings = Settings.load_settings_for_server(name)
 
         ManagerContainer.start_container(name, server_settings)
       end
@@ -309,13 +280,11 @@ class CLI < Thor
     warnings = false
     errors = false
 
-
-    servers = nil
     begin
       Config.load(options)
 
-      Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name)
+      Config.servers.each do |name, server_settings|
+        #server_settings = Settings.load_settings_for_server(name)
 
         if server_settings.is_swarm_mode?
           ManagerSwarm.destroy_service(name, server_settings)
@@ -375,12 +344,11 @@ class CLI < Thor
     errors = false
 
 
-    servers = nil
     begin
       Config.load(options)
 
-      Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name)
+      Config.servers.each do |name, server_settings|
+        #server_settings = Settings.load_settings_for_server(name)
 
         ManagerContainer.stop_container(name, server_settings)
       end
@@ -435,12 +403,11 @@ class CLI < Thor
     warnings = false
     errors = false
 
-    servers = nil
     begin
       Config.load(options)
 
-      Config.servers.each do |name, opts|
-        server_settings = Settings.load_settings_for_server(name)
+      Config.servers.each do |name, server_settings|
+        #server_settings = Settings.load_settings_for_server(name)
 
         ManagerContainer.clear_cache(name, server_settings)
       end

@@ -8,9 +8,11 @@ module DockerBuilder
       #Server = DockerBuilder::Server
 
       attr_reader :_config_options
+      attr_reader :_config_servers
 
       def initialize
         @_config_options = {}
+        @_config_servers = {}
       end
 
       # Allow users to set command line path options in config.rb
@@ -18,12 +20,26 @@ module DockerBuilder
         define_method name, lambda {|path| _config_options[name] = path }
       end
 
+      # options - common
+      [
+          :prefix, :image_prefix, :container_prefix, :service_prefix,
+          :dir_data
+      ].each do |name|
+        define_method name, lambda {|path| _config_options[name] = path }
+      end
+
       # allowed options
-      [:servers, :common, :base].each do |name|
+      [:common, :base].each do |name|
         define_method name, lambda {|v| _config_options[name] = v }
       end
 
 
+      def server(server_name, &block)
+        sc = ServerSettings.new
+        block.call(sc)
+        #sc.instance_eval(&block)
+        _config_servers[server_name] = sc
+      end
 
       # Allows users to create preconfigured models.
 =begin

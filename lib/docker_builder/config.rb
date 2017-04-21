@@ -16,7 +16,8 @@ module DockerBuilder
     class << self
       #include Utilities::Helpers
 
-      attr_reader :servers, :root_path, :config_file, :tmp_path, :options
+      attr_reader :servers, :options,
+                  :root_path, :config_file, :tmp_path
 
 
       # Define on self, since it's  a class method
@@ -36,8 +37,9 @@ module DockerBuilder
 
       # Loads the user's +config.rb+ and all model files.
       def load(opts = {})
-        puts "update opts from #{opts}"
         update(opts)  # from the command line
+
+        #config_file = 'temp_config.rb'
 
         puts "config file: #{config_file}"
 
@@ -46,27 +48,30 @@ module DockerBuilder
           raise "Could not find configuration file: '#{config_file}'."
         end
 
-        config = File.read(config_file)
-
-        #version = DockerBuilder::VERSION.split('.').first
-        #unless config =~ /^# Backup v#{ version }\.x Configuration$/
-        #  raise Error, <<-EOS
-        #    Invalid Configuration File
-        #  EOS
-        #end
+        text_config = File.read(config_file)
 
         dsl = DSL.new
-        dsl.instance_eval(config, config_file)
+        dsl.instance_eval(text_config, config_file)
 
+        # set options from dsl object
         update(dsl._config_options)  # from config.rb
-        update(opts)              # command line takes precedence
+        # command line takes precedence
+        update(opts)
 
         #Dir[File.join(File.dirname(config_file), 'models', '*.rb')].each do |model|
         #  dsl.instance_eval(File.read(model), model)
         #end
 
         # servers
-        load_servers(opts)
+        #load_servers(opts)
+        @servers = dsl._config_servers
+
+        @servers.each do |name, sc|
+          # from common config
+          sc.common_config = self
+          sc.properties['name'] ||= name
+          #sc.properties['common'] = Config.options[:common]
+        end
 
       end
 
@@ -88,9 +93,10 @@ module DockerBuilder
         @options
       end
 
-      def servers
-        options[:servers]
-      end
+      #def servers
+        #options[:servers]
+        #@_servers || []
+      #end
 
       def load_servers(opts)
         # Identify all servers
@@ -103,6 +109,52 @@ module DockerBuilder
         end
 
 
+      end
+
+
+      def self.load_settings_for_server(name, opts={})
+        settings = ServerSettings.new
+
+        settings.set 'name', name
+
+        # set from main Config
+        Config.servers[name].each do |k,v|
+          settings.properties[k]=v
+        end
+
+
+        #puts "current=#{File.dirname(__FILE__)}"
+        #puts "ff=#{file_base_settings}"
+
+        #
+        #t = File.read(file_base_settings) rescue ''
+        #eval(t, settings.get_binding)
+
+
+        #
+        f = file_settings_for_server(name)
+        t = File.read(f) rescue ''
+        eval(t, settings.get_binding)
+
+        #
+        settings.properties['name'] ||= name
+
+        # from common config
+        settings.properties['common'] = Config.options[:common]
+
+        settings
+      end
+
+
+      ### helpers
+
+      def self.file_settings_for_server(name)
+        #File.join(File.dirname(__FILE__), '..', 'config', "#{name}.rb")
+        File.join(Config.root_path, 'servers', name, 'config.rb')
+      end
+
+      def self.file_server_base_settings
+        File.join(File.dirname(__FILE__), '..', 'config' ,'common.rb')
       end
 
 
@@ -119,15 +171,10 @@ module DockerBuilder
         #puts "root from opts = #{root_path}"
 
         if root_path.empty?
-          #puts " set default"
           root_path = File.path(Dir.getwd)
-          #puts "default root = #{root_path}"
         end
 
         new_root = root_path.empty? ? false : set_root_path(root_path)
-
-        #puts "FINAL root= #{@root_path}"
-        #exit
 
         DEFAULTS.each do |name, ending|
           set_path_variable(name, options[name], ending, new_root)
@@ -135,7 +182,6 @@ module DockerBuilder
 
         # options
         opts.each do |name, v|
-          #puts "set var #{name} == #{v}"
           set_variable(name, v)
         end
 
@@ -147,16 +193,12 @@ module DockerBuilder
       # Sets the @root_path to the given +path+ and returns it.
       # Raises an error if the given +path+ does not exist.
       def set_root_path(path)
-        #puts "set path = #{path}"
-
         # allows #reset! to set the default @root_path,
         # then use #update to set all other paths,
         # without requiring that @root_path exist.
         return @root_path if path == @root_path
 
         path = File.expand_path(path)
-
-        #puts " res root path=#{path}"
 
         unless File.directory?(path)
           raise Error, <<-EOS

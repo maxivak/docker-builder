@@ -2,6 +2,7 @@ module DockerBuilder
 
 class ServerSettings
   attr_accessor :properties
+  attr_accessor :common_config
 
   def get_binding
     return binding()
@@ -42,6 +43,23 @@ class ServerSettings
   end
 
   ### DSL
+
+
+  def build=(opts={})
+    build(opts)
+  end
+  def docker=(opts={})
+    docker(opts)
+  end
+  def provision=(opts={})
+    provision(opts)
+  end
+
+  def attributes=(opts={})
+    attributes(opts)
+  end
+
+
   def set(name, v)
     properties[name] = v
   end
@@ -91,20 +109,25 @@ class ServerSettings
 
 
   ###
+  def properties_common(opt_name)
+    common_config.options[opt_name] || common_config.send(opt_name)
+  end
+
   def prefix
-    properties['common']['prefix']
+    #properties['common']['prefix']
+    properties_common('prefix')
   end
 
   def container_prefix
-    "#{properties['common']['prefix']}#{properties['common']['container_prefix']}"
+    "#{prefix}#{properties_common('container_prefix')}"
   end
 
   def image_prefix
-    "#{properties['common']['prefix']}#{properties['common']['image_prefix']}"
+    "#{prefix}#{properties_common('image_prefix')}"
   end
 
   def service_prefix
-    "#{properties['common']['prefix']}#{properties['common']['service_prefix']}"
+    "#{prefix}#{properties_common('service_prefix')}"
   end
 
 
@@ -158,10 +181,11 @@ class ServerSettings
       s = v.gsub /^\.\//, ''
 
       #res = "$PWD/servers/#{self.name}/#{s}"
-      res = File.expand_path(s, dir_server_root)
+      #res = File.expand_path(s, dir_server_root)
+      res = File.expand_path(s, properties_common('root_path'))
 
     elsif v =~ /^\/\//
-      res = self.properties['common']['dir_data']+(v.gsub /^\/\//, '')
+      res = dir_data_base+(v.gsub /^\/\//, '')
     elsif v =~ /^\//
       res = v
     else
@@ -171,8 +195,12 @@ class ServerSettings
     res
   end
 
+  def dir_data_base
+    "#{properties_common('dir_data')}"
+  end
+
   def dir_data
-    "#{properties['common']['dir_data']}#{self.name}/"
+    "#{properties_common('dir_data')}#{self.name}/"
   end
 
 
@@ -330,57 +358,4 @@ class ServerSettings
 
 end
 
-
-
-class Settings
-
-  def self.load_settings_for_server(name, opts={})
-    settings = ServerSettings.new
-
-    settings.set 'name', name
-
-    # set from main Config
-    Config.servers[name].each do |k,v|
-      settings.properties[k]=v
-    end
-
-
-    #puts "current=#{File.dirname(__FILE__)}"
-    #puts "ff=#{file_base_settings}"
-
-    #
-    #t = File.read(file_base_settings) rescue ''
-    #eval(t, settings.get_binding)
-
-
-    #
-    f = file_settings_for_server(name)
-    t = File.read(f) rescue ''
-    eval(t, settings.get_binding)
-
-    #
-    settings.properties['name'] ||= name
-
-    # from common config
-    settings.properties['common'] = Config.options[:common]
-
-    settings
-  end
-
-
-  ### helpers
-
-  def self.file_settings_for_server(name)
-    #File.join(File.dirname(__FILE__), '..', 'config', "#{name}.rb")
-    File.join(Config.root_path, 'servers', name, 'config.rb')
-  end
-
-  def self.file_base_settings
-    File.join(File.dirname(__FILE__), '..', 'config' ,'common.rb')
-  end
-
-
-
-
-end
 end
