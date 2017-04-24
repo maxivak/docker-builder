@@ -63,16 +63,12 @@ module DockerBuilder
         #end
 
         # servers
-        #puts "ss = #{@options}"
-
-        #load_servers(opts)
+        # Identify all servers
         if @options['server']
-          #puts "ONE sevrer"
           srv_name = @options['server'] || @options[:server]
           # one server
           @servers = {srv_name => dsl._config_servers[srv_name]}
         else
-          #puts "ALL sevrer"
           # all servers
           @servers = dsl._config_servers
         end
@@ -84,6 +80,8 @@ module DockerBuilder
           sc.properties['name'] ||= name
           #sc.properties['common'] = Config.options[:common]
         end
+
+
 
       end
 
@@ -110,20 +108,9 @@ module DockerBuilder
         #@_servers || []
       #end
 
-      def load_servers(opts)
-        # Identify all servers
-        if opts[:server]
-          server_name = opts[:server]
-          options[:servers] = {server_name=>options[:servers][server_name] }
-        else
-          # get from config
-          #options[:servers] = options[:servers]
-        end
 
-
-      end
-
-
+      ### NOT USED
+      ## TODO: refactor
       def self.load_settings_for_server(name, opts={})
         settings = ServerSettings.new
 
