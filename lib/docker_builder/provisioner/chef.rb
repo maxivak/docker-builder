@@ -30,11 +30,10 @@ module DockerBuilder
         save_config
 
         # copy to container
-        DockerBuilder::Command.cmd %Q(docker cp #{filename_config} #{settings.container_name}:/opt/bootstrap/config.json)
+        DockerBuilder::Command.cmd %Q(docker cp #{filename_config} #{settings.container_name}:#{docker_filename_config})
 
       end
 
-      # helpers
       def save_config
         require 'json'
         filename = filename_config
@@ -50,6 +49,10 @@ module DockerBuilder
         File.join(Config.root_path, 'temp', "bootstrap-#{settings.name}.json")
       end
 
+      def docker_filename_config
+        "/opt/bootstrap/config.json"
+      end
+
       def build_config
         res = {}
 
@@ -63,7 +66,25 @@ module DockerBuilder
 
 
       ### run recipes
+      def run_recipe_in_container(dir_base, recipe_name)
 
+        recipe_name ||= "server::bootstrap"
+
+        # generate config
+        copy_config_file
+
+
+        #
+        q = %Q(cd #{dir_base} && chef-client -z -j #{docker_filename_config} --override-runlist "recipe[#{recipe_name}]" )
+
+        # exec
+        docker_run_cmd q
+      end
+
+      ###
+      def docker_run_cmd(s)
+        DockerBuilder::Command.cmd %Q(docker exec #{settings.container_name} bash -c '#{s}')
+      end
 
     end
   end

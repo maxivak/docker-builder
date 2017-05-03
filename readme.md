@@ -195,7 +195,7 @@ Process:
 {   
 'provision'=>{
     'setup' => [
-        {type: 'host', ..}, 
+        {type: 'shell', ..}, 
         ..
     ]
     ...
@@ -357,6 +357,8 @@ docker exec -ti container_name /bin/bash
 
 # Provision
 
+
+
 ## Run provision after start
 
 ### Run provision from host machine
@@ -373,6 +375,27 @@ Run from outside container
 ```
 
 it will run script `name=myserver ruby myprovision1.rb` from the host machine.
+
+
+### Provision with Chef
+
+* in config file
+```
+    'provision' => {
+        "bootstrap" => [
+            {'type' => 'chef', "script"=>"", "dir_base"=>"/opt/bootstrap", "recipe"=>"server::bootstrap" },
+        ]
+    },
+```
+
+it will run chef provisioning:
+```
+cd /opt/bootstrap/ && chef-client -z -j /opt/bootstrap/config.json --override-runlist "recipe[server::bootstrap]"
+
+```
+
+config file with attributes (`/opt/bootstrap/config.json`) for chef-client is generated automatically.
+
 
 
 ## Development
